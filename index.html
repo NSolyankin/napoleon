@@ -354,28 +354,30 @@
     d += " Z";
     return d;
   }
-  // jagged side boundaries; each boundary is shared by the two slabs that meet on it,
-  // so neighbouring slabs tile without gaps even though the edge is broken
-  var SIDEB = [];
-  function buildSideBoundaries(){
-    SIDEB = [];
-    var amp = 2.5, seg = 6;
-    for(var k=0;k<=NB;k++){
-      var y = FY1 - k*BH, pts = [];
-      for(var s=0;s<=seg;s++){
-        var t = s/seg, x = FX1 + DX*t, yy = y + DY*t;
-        if(s !== 0 && s !== seg) yy += rj(amp);
-        pts.push([x, yy]);
-      }
-      SIDEB.push(pts);
+  // jagged side boundaries; every boundary is shared by the two slabs that meet on it,
+  // so neighbouring slabs tile without gaps even though the edge is broken.
+  // SIDEB - band edges (NB+1 lines); SIDEC - pastry/cream edge inside each band (NB lines)
+  var SIDEB = [], SIDEC = [];
+  function jagLine(y, amp, seg){
+    var pts = [];
+    for(var s=0;s<=seg;s++){
+      var t = s/seg, x = FX1 + DX*t, yy = y + DY*t;
+      if(s !== 0 && s !== seg) yy += rj(amp);
+      pts.push([x, yy]);
     }
+    return pts;
   }
-  function sidePathBand(i){
-    var b0 = SIDEB[i], b1 = SIDEB[i+1], k;
-    var d = "M "+f1(b0[0][0])+" "+f1(b0[0][1]);
-    for(k=1;k<b0.length;k++) d += " L "+f1(b0[k][0])+" "+f1(b0[k][1]);
-    d += " L "+f1(b1[b1.length-1][0])+" "+f1(b1[b1.length-1][1]);
-    for(k=b1.length-2;k>=0;k--) d += " L "+f1(b1[k][0])+" "+f1(b1[k][1]);
+  function buildSideBoundaries(){
+    SIDEB = []; SIDEC = [];
+    var amp = 2.5, seg = 6, k;
+    for(k=0;k<=NB;k++) SIDEB.push(jagLine(FY1 - k*BH, amp, seg));
+    for(k=0;k<NB;k++)  SIDEC.push(jagLine(bandTop(k) + CREAM, amp, seg));
+  }
+  function sideQuad(bBottom, bTop){
+    var k, d = "M "+f1(bBottom[0][0])+" "+f1(bBottom[0][1]);
+    for(k=1;k<bBottom.length;k++) d += " L "+f1(bBottom[k][0])+" "+f1(bBottom[k][1]);
+    d += " L "+f1(bTop[bTop.length-1][0])+" "+f1(bTop[bTop.length-1][1]);
+    for(k=bTop.length-2;k>=0;k--) d += " L "+f1(bTop[k][0])+" "+f1(bTop[k][1]);
     return d + " Z";
   }
   function capPath(ti){
@@ -415,9 +417,11 @@
     var g = E("g", {"class":"nap-lyr", "data-id":String(L.id), "role":"button",
       "tabindex":"-1", "aria-hidden":"true", "aria-label":"Слой "+L.id+", "+L.name});
 
-    // side cut (depth) with broken edges
-    g.appendChild(E("path", {"class":"nap-side", d:sidePathBand(i),
+    // side cut (depth): pastry slab (tintable) + cream stripe above it, both with broken edges
+    g.appendChild(E("path", {"class":"nap-side", d:sideQuad(SIDEB[i], SIDEC[i]),
       stroke:"rgba(40,24,6,.4)", "stroke-width":"1"}));
+    g.appendChild(E("path", {"class":"nap-sidecream", d:sideQuad(SIDEC[i], SIDEB[i+1]),
+      fill:"#e7d7ae", stroke:"rgba(120,92,40,.3)", "stroke-width":"0.8"}));
 
     // cream behind the whole band
     g.appendChild(E("rect", {x:f1(FX0), y:f1(bt-0.6), width:f1(FX1-FX0), height:f1(BH+1.2), fill:"url(#napCream)"}));
