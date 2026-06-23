@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#15100b">
+<title>Турнир Наполеон - семь слоев ситуации</title>
+<style>
+  :root{ --bg:#15100b; --ink:#f5ead8; --muted:#b9a888; --gold:#d9b878; }
+  *{box-sizing:border-box}
+  html,body{margin:0; min-height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    color:var(--ink);
+    background:#0d0a06 radial-gradient(120% 92% at 50% 26%, #3a2a1b 0%, #211710 38%, #140f0a 70%, #0d0a06 100%) no-repeat;
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
+    padding:30px 18px 26px; -webkit-font-smoothing:antialiased;
+  }
+
+  /* header */
+  .nap-head{text-align:center; margin-bottom:4px}
+  .nap-title{font-family:Georgia,"Times New Roman",serif; font-weight:700;
+    letter-spacing:.40em; text-indent:.40em; font-size:clamp(30px,5vw,52px);
+    margin:0; color:#f0dcae; text-shadow:0 2px 22px rgba(0,0,0,.55)}
+  .nap-sub{margin:12px 0 0; color:var(--muted);
+    font-size:clamp(11px,1.6vw,14px); letter-spacing:.18em; text-transform:uppercase}
+  .nap-sub2{margin:7px 0 0; color:#9c8c72; font-size:clamp(10px,1.4vw,12.5px); letter-spacing:.10em}
+  .nap-rule{width:min(440px,72vw); height:1px; margin:16px auto 0;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent); opacity:.55}
+  .nap-noscript{max-width:560px; margin:28px auto 0; padding:18px 20px; border-radius:14px;
+    background:rgba(211,75,66,.10); border:1px solid rgba(211,75,66,.42);
+    color:var(--ink); font-size:14px; line-height:1.6; text-align:left}
+  .nap-noscript strong{display:block; margin-bottom:8px; color:#ffd9d4; font-size:16px; letter-spacing:.03em}
+
+  /* layout */
+  .nap-grid{display:flex; align-items:center; justify-content:center;
+    gap:clamp(14px,3.2vw,48px); margin-top:30px; width:100%; max-width:1040px}
+  .nap-cakecol{display:flex; flex-direction:column; align-items:center}
+
+  /* team cards */
+  .nap-team{width:clamp(150px,18vw,208px);
+    background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.08); border-top:3px solid var(--clr,#888);
+    border-radius:16px; padding:16px 16px 18px; text-align:center;
+    box-shadow:0 18px 42px rgba(0,0,0,.38)}
+  .nap-eyebrow{font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .nap-name-input{width:100%; margin:6px 0 2px; border:none; background:transparent; text-align:center;
+    color:var(--ink); font-family:Georgia,serif; font-weight:700; font-size:clamp(17px,2.1vw,23px); outline:none}
+  .nap-name-input:focus{background:rgba(255,255,255,.06); border-radius:8px}
+  .nap-swatch-row{display:flex; align-items:center; justify-content:center; gap:8px; margin:8px 0 14px}
+  .nap-swatch{-webkit-appearance:none; appearance:none; width:30px; height:30px; padding:0;
+    border:none; cursor:pointer; border-radius:50%; background:transparent}
+  .nap-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .nap-swatch::-webkit-color-swatch{border:2px solid rgba(255,255,255,.55); border-radius:50%}
+  .nap-swatch::-moz-color-swatch{border:2px solid rgba(255,255,255,.55); border-radius:50%}
+  .nap-swatch-label{font-size:11px; color:var(--muted); letter-spacing:.05em}
+  .nap-score{font-family:Georgia,serif; font-weight:700; line-height:1;
+    font-size:clamp(40px,6vw,62px); color:var(--clr,#fff)}
+  .nap-score-sub{font-size:11px; color:var(--muted); letter-spacing:.16em; text-transform:uppercase; margin-top:5px}
+
+  /* cake */
+  .nap-cake{position:relative; width:clamp(280px,42vw,458px)}
+  .nap-glow{position:absolute; left:50%; top:44%; transform:translate(-50%,-50%);
+    width:168%; height:158%; border-radius:50%; z-index:0; pointer-events:none;
+    background:radial-gradient(circle, rgba(244,206,128,.24), rgba(244,206,128,0) 62%); filter:blur(8px)}
+  .nap-stack{position:relative; z-index:2; border-radius:9px; filter:drop-shadow(0 24px 30px rgba(0,0,0,.55))}
+
+  .nap-topping{position:relative; z-index:2; height:clamp(26px,3.4vw,34px);
+    border-radius:14px 12px 6px 5px; overflow:visible;
+    background:linear-gradient(180deg,#f7e7c2 0%, #ecd6a6 60%, #e3ca96 100%);
+    box-shadow:inset 0 -4px 7px rgba(170,128,68,.30), inset 0 2px 3px rgba(255,255,255,.5)}
+
+  .nap-crumb{position:absolute; border-radius:50%; pointer-events:none}
+  .nap-crumb.flake{border-radius:1.5px}
+
+  .nap-layer{position:relative; height:clamp(42px,5.2vw,58px); overflow:hidden; cursor:pointer; user-select:none;
+    touch-action:manipulation; transition:filter .25s ease, transform .25s ease}
+  .nap-layer.is-bottom{border-radius:0 0 10px 10px}
+  .nap-layer.is-bottom .nap-pastry{border-radius:0 0 10px 10px}
+  .nap-layer:hover{filter:brightness(1.05)}
+  .nap-layer.flash{animation:napflash .5s ease}
+  @keyframes napflash{0%{transform:scale(1)} 35%{transform:scale(1.028)} 100%{transform:scale(1)}}
+
+  .nap-pastry{position:absolute; left:0; right:0; bottom:0; height:54%;
+    background:linear-gradient(180deg,#ecc67e 0%,#dca85a 50%,#c5913f 100%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.16), inset 0 -3px 5px rgba(90,55,15,.25)}
+  .nap-flake{position:absolute; inset:0; pointer-events:none; background:
+    repeating-linear-gradient(180deg,
+      rgba(0,0,0,.085) 0 1px,
+      rgba(255,255,255,.075) 1px 2px,
+      transparent 2px 3.5px)}
+  .nap-gloss{position:absolute; left:0; right:0; top:0; height:46%; pointer-events:none;
+    background:linear-gradient(180deg, rgba(255,255,255,.26), rgba(255,255,255,0))}
+  .nap-sides{position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(90deg, rgba(0,0,0,.18), transparent 10%, transparent 90%, rgba(0,0,0,.18))}
+
+  .nap-cream{position:absolute; left:0; right:0; top:0; height:46%;
+    background:linear-gradient(180deg,#fffaf0 0%,#fbf3da 50%,#f3e7c5 100%);
+    box-shadow:inset 0 3px 5px rgba(120,80,30,.15), inset 0 -1px 2px rgba(120,80,30,.10); overflow:hidden}
+
+  .nap-badge{position:absolute; left:9px; top:23%; transform:translateY(-50%); z-index:4;
+    width:19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:Georgia,serif; font-size:11px; font-weight:700; border:1.5px solid rgba(255,255,255,.55)}
+  .nap-lname{position:absolute; left:38px; right:12px; top:23%; transform:translateY(-50%); z-index:4;
+    text-align:center; font-size:clamp(12px,1.55vw,15.5px); font-weight:600; letter-spacing:.02em;
+    color:#4a3413; text-shadow:0 1px 0 rgba(255,255,255,.55);
+    white-space:nowrap; pointer-events:none; user-select:none}
+  .nap-stack.names-off .nap-lname{display:none}
+
+  .nap-sidecrumb{position:absolute; top:0; height:100%; width:12px; z-index:3; pointer-events:none}
+  .nap-sidecrumb.left{left:-3px}
+  .nap-sidecrumb.right{right:-3px}
+
+  .nap-plate{position:absolute; left:50%; bottom:-18px; transform:translateX(-50%);
+    width:128%; height:42px; border-radius:50%; z-index:1;
+    background:radial-gradient(60% 100% at 50% 30%, #f3ecdd, #ddd2bd 70%, #c9bca2 100%);
+    box-shadow:0 16px 28px rgba(0,0,0,.46), inset 0 2px 4px rgba(255,255,255,.5)}
+  .nap-plate::after{content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:86%; height:60%; border-radius:50%; box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
+
+  /* status + controls */
+  .nap-status{margin-top:34px; text-align:center; min-height:24px; max-width:520px;
+    font-size:clamp(13px,1.7vw,16px); color:var(--muted); letter-spacing:.03em; line-height:1.5}
+  .nap-status b{color:var(--ink); font-weight:600}
+  .nap-status.ready{color:#f0dcae; font-size:clamp(14px,1.9vw,18px)}
+
+  .nap-controls{margin-top:28px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center}
+  .nap-btn{font:inherit; font-size:13px; letter-spacing:.05em; color:var(--ink);
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+    padding:10px 18px; border-radius:999px; cursor:pointer; touch-action:manipulation;
+    transition:background .2s, transform .1s}
+  .nap-btn.arm{background:rgba(211,75,66,.28); border-color:rgba(211,75,66,.65); color:#ffd9d4}
+  .nap-btn:hover{background:rgba(255,255,255,.12)}
+  .nap-btn:active{transform:translateY(1px)}
+  .nap-check{display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+    font-size:13px; letter-spacing:.04em; color:var(--ink);
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+    padding:9px 16px; border-radius:999px; transition:background .2s}
+  .nap-check:hover{background:rgba(255,255,255,.12)}
+  .nap-check input{width:16px; height:16px; accent-color:var(--gold); cursor:pointer}
+  .nap-hint{width:100%; text-align:center; margin-top:6px; color:#8f8068;
+    font-size:12px; letter-spacing:.02em; line-height:1.55}
+
+  /* confetti */
+  .nap-confetti{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:50}
+  .nap-conf{position:absolute; border-radius:2px; opacity:.95; animation:napfall linear forwards}
+  @keyframes napfall{to{transform:translateY(112vh) rotate(560deg); opacity:.9}}
+
+  /* focus + responsive */
+  .nap-layer:focus-visible,.nap-btn:focus-visible,.nap-swatch:focus-visible,.nap-name-input:focus-visible,.nap-check:focus-within{
+    outline:2px solid var(--gold); outline-offset:2px}
+  @media (max-width:720px){
+    .nap-grid{flex-wrap:wrap; gap:12px}
+    .nap-team{width:47%; order:1; padding:12px 10px 14px}
+    .nap-team[data-team="1"]{order:2}
+    .nap-cakecol{width:100%; order:3; margin-top:8px}
+    .nap-score{font-size:clamp(34px,11vw,46px)}
+    body{padding:22px 12px 24px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important}}
+</style>
+</head>
+<body>
+
+  <header class="nap-head">
+    <h1 class="nap-title">НАПОЛЕОН</h1>
+    <div class="nap-sub">Межгрупповой турнир по управленческой борьбе</div>
+    <div class="nap-sub2">Семь слоев управленческой ситуации · один общий торт на две группы</div>
+    <div class="nap-rule"></div>
+  </header>
+
+  <noscript>
+    <style>.nap-grid,.nap-controls{display:none !important}</style>
+    <div class="nap-noscript">
+      <strong>Нужен JavaScript</strong>
+      Похоже, страница открыта во встроенном просмотрщике файлов (например, в Telegram), где скрипты отключены, поэтому торт и кнопки не работают. Откройте эту страницу по ссылке в обычном браузере: разместите файл на GitHub Pages и откройте адрес страницы. В Telegram такая ссылка откроется во встроенном браузере и будет работать, либо выберите в меню Telegram пункт "Открыть в Safari" или "Открыть в Chrome".
+    </div>
+  </noscript>
+
+  <main class="nap-grid">
+    <div class="nap-team" data-team="0">
+      <div class="nap-eyebrow">команда</div>
+      <input class="nap-name-input" type="text" maxlength="22" aria-label="Название команды">
+      <div class="nap-swatch-row">
+        <input class="nap-swatch" type="color" aria-label="Цвет команды">
+        <span class="nap-swatch-label">цвет</span>
+      </div>
+      <div class="nap-score">0</div>
+      <div class="nap-score-sub">из 7</div>
+    </div>
+
+    <div class="nap-cakecol">
+      <div class="nap-cake">
+        <div class="nap-glow"></div>
+        <div class="nap-stack" id="napStack"></div>
+        <div class="nap-sidecrumb left" id="napSideL"></div>
+        <div class="nap-sidecrumb right" id="napSideR"></div>
+        <div class="nap-plate" id="napPlate"></div>
+      </div>
+      <div class="nap-status" id="napStatus"></div>
+    </div>
+
+    <div class="nap-team" data-team="1">
+      <div class="nap-eyebrow">команда</div>
+      <input class="nap-name-input" type="text" maxlength="22" aria-label="Название команды">
+      <div class="nap-swatch-row">
+        <input class="nap-swatch" type="color" aria-label="Цвет команды">
+        <span class="nap-swatch-label">цвет</span>
+      </div>
+      <div class="nap-score">0</div>
+      <div class="nap-score-sub">из 7</div>
+    </div>
+  </main>
+
+  <div class="nap-controls">
+    <label class="nap-check"><input type="checkbox" id="napNames" checked><span>Показывать названия слоев</span></label>
+    <button class="nap-btn" id="napReset" type="button">Сбросить</button>
+    <button class="nap-btn" id="napFs" type="button">На весь экран</button>
+    <div class="nap-hint">
+      Клик по коржу переключает цвет: первая команда -&gt; вторая команда -&gt; без цвета.
+      Названия и цвета команд можно менять в карточках.
+    </div>
+  </div>
+
+  <div class="nap-confetti" id="napConfetti"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var LAYERS = [
+    {id:1, name:"Технический",     desc:"Материальные, предметные условия ситуации"},
+    {id:2, name:"Технологический", desc:"Методы, процессы и средства реализации"},
+    {id:3, name:"Экономический",   desc:"Производственно-хозяйственные и денежные отношения"},
+    {id:4, name:"Правовой",        desc:"Правовое регулирование отношений участников"},
+    {id:5, name:"Психологический", desc:"Внутренняя жизнь человека, его психика и психология"},
+    {id:6, name:"Этический",       desc:"Нормы морали и нравственности"},
+    {id:7, name:"Эстетический",    desc:"Чувственное восприятие прекрасного, красоты и гармонии"}
+  ];
+
+  var DEFAULTS = {
+    teams: [{name:"Группа 161", color:"#d34b42"}, {name:"Группа 162", color:"#3a78c4"}],
+    paint: {},
+    showNames: true
+  };
+
+  var state = loadState();
+  var wasComplete = false;
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem("napoleon_v5");
+      if(raw){
+        var o = JSON.parse(raw);
+        if(o && o.teams && o.teams.length===2 && o.paint){
+          if(typeof o.showNames !== "boolean") o.showNames = true;
+          return o;
+        }
+      }
+    }catch(e){}
+    return JSON.parse(JSON.stringify(DEFAULTS));
+  }
+  function saveState(){ try{ localStorage.setItem("napoleon_v5", JSON.stringify(state)); }catch(e){} }
+
+  function hexToRgb(h){
+    h = (h||"").replace("#","");
+    if(h.length===3) h = h.split("").map(function(c){return c+c;}).join("");
+    return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
+  }
+  function shade(h, amt){
+    var rgb = hexToRgb(h), f = amt<0?0:255, p = Math.abs(amt);
+    function m(v){ return Math.round(v + (f-v)*p); }
+    return "rgb("+m(rgb[0])+","+m(rgb[1])+","+m(rgb[2])+")";
+  }
+  function lum(h){ var c = hexToRgb(h); return 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2]; }
+  function textOn(h){ return lum(h) > 150 ? "#3a2a12" : "#fff8ee"; }
+  function shadowOn(h){ return lum(h) > 150 ? "rgba(255,255,255,.45)" : "rgba(0,0,0,.42)"; }
+  function toHex(c){
+    if(/^#[0-9a-f]{6}$/i.test(c)) return c;
+    if(/^#[0-9a-f]{3}$/i.test(c)) return "#"+c.slice(1).split("").map(function(x){return x+x;}).join("");
+    return "#888888";
+  }
+  function rand(a,b){ return a + Math.random()*(b-a); }
+
+  // ----- сборка торта -----
+  function buildLayer(L){
+    var el = document.createElement("div");
+    el.className = "nap-layer"; el.id = "layer-"+L.id; el.tabIndex = 0;
+    el.setAttribute("role","button");
+    el.setAttribute("aria-label","Слой "+L.id+", "+L.name);
+    if(L.id === 1) el.classList.add("is-bottom");
+    el.innerHTML =
+      '<div class="nap-pastry"><div class="nap-flake"></div><div class="nap-gloss"></div><div class="nap-sides"></div></div>' +
+      '<div class="nap-cream"></div>' +
+      '<span class="nap-badge">'+L.id+'</span>' +
+      '<span class="nap-lname">'+L.name+'</span>';
+    el.addEventListener("click", function(){ cycle(L.id, el); });
+    el.addEventListener("keydown", function(e){
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); cycle(L.id, el); }
+    });
+    el.addEventListener("mouseenter", function(){
+      document.getElementById("napStatus").innerHTML = "<b>Слой "+L.id+". "+L.name+":</b> "+L.desc;
+    });
+    el.addEventListener("mouseleave", updateStatus);
+    return el;
+  }
+
+  function makeCrumb(parent, opts){
+    var c = document.createElement("span");
+    c.className = "nap-crumb" + (opts.flake ? " flake" : "");
+    c.style.width = opts.size + "px";
+    c.style.height = (opts.flake ? opts.size*0.7 : opts.size) + "px";
+    c.style.left = opts.left; c.style.top = opts.top;
+    c.style.background = opts.color;
+    if(opts.shadow) c.style.boxShadow = "0 1px 1px rgba(80,52,16,.35)";
+    if(typeof opts.rot === "number") c.style.transform = "rotate("+opts.rot+"deg)";
+    parent.appendChild(c);
+  }
+
+  function buildCake(){
+    var stack = document.getElementById("napStack");
+    var tan = ["#d8ab5d","#c4953f","#b07f2c","#e3bd72","#a87327","#caa24f"];
+    var dark = ["#8f6320","#7c531a"];
+
+    var top = document.createElement("div");
+    top.className = "nap-topping";
+    for(var i=0;i<84;i++){
+      var big = Math.random() < 0.18;
+      makeCrumb(top, {
+        size: big ? rand(5,8) : rand(2.5,5),
+        left: rand(-1,99)+"%", top: rand(-6,16)+"px",
+        color: tan[(Math.random()*tan.length)|0],
+        flake: Math.random() < 0.3, shadow: true, rot: rand(-40,40)
+      });
+    }
+    for(var d=0; d<10; d++){
+      makeCrumb(top, {size: rand(2,4), left: rand(0,100)+"%", top: rand(-4,15)+"px",
+        color: dark[(Math.random()*dark.length)|0], shadow: false});
+    }
+    for(var g=0; g<9; g++){
+      makeCrumb(top, {size: rand(1.5,3), left: rand(2,98)+"%", top: rand(-3,13)+"px",
+        color: "rgba(255,250,242,.92)", shadow: false});
+    }
+    stack.appendChild(top);
+
+    for(var k=LAYERS.length-1;k>=0;k--){ stack.appendChild(buildLayer(LAYERS[k])); }
+
+    ["napSideL","napSideR"].forEach(function(sid){
+      var strip = document.getElementById(sid);
+      for(var n=0;n<28;n++){
+        makeCrumb(strip, {size: rand(2,6), left: rand(0,11)+"px", top: rand(1,99)+"%",
+          color: tan[(Math.random()*tan.length)|0], shadow: true, rot: rand(-30,30)});
+      }
+    });
+
+    var plate = document.getElementById("napPlate");
+    for(var j=0;j<9;j++){
+      makeCrumb(plate, {size: rand(2,5), left: rand(12,88)+"%", top: rand(20,72)+"%",
+        color: tan[(Math.random()*tan.length)|0], shadow: false});
+    }
+  }
+
+  // ----- отрисовка состояния -----
+  function applyLayer(el, p){
+    var pastry = el.querySelector(".nap-pastry");
+    var badge = el.querySelector(".nap-badge");
+    if(p === 0){
+      pastry.style.background = "linear-gradient(180deg,#ecc67e 0%,#dca85a 50%,#c5913f 100%)";
+      badge.style.background = "rgba(216,168,77,.95)";
+      badge.style.color = "#5b3d12";
+      badge.style.borderColor = "rgba(255,255,255,.6)";
+    }else{
+      var c = state.teams[p-1].color;
+      pastry.style.background = "linear-gradient(180deg,"+shade(c,.22)+" 0%,"+c+" 50%,"+shade(c,-.20)+" 100%)";
+      badge.style.background = c;
+      badge.style.color = textOn(c);
+      badge.style.borderColor = "rgba(255,255,255,.78)";
+    }
+  }
+
+  function counts(){
+    var a=0,b=0;
+    for(var i=0;i<LAYERS.length;i++){
+      var p = state.paint[LAYERS[i].id] || 0;
+      if(p===1) a++; else if(p===2) b++;
+    }
+    return [a,b];
+  }
+
+  function updateTeams(){
+    var cards = document.querySelectorAll(".nap-team");
+    var cnt = counts();
+    for(var n=0;n<cards.length;n++){
+      var card = cards[n], i = +card.dataset.team;
+      card.style.setProperty("--clr", state.teams[i].color);
+      var inp = card.querySelector(".nap-name-input");
+      if(document.activeElement !== inp) inp.value = state.teams[i].name;
+      card.querySelector(".nap-swatch").value = toHex(state.teams[i].color);
+      card.querySelector(".nap-score").textContent = cnt[i];
+    }
+  }
+
+  function updateStatus(){
+    var cnt = counts(), a = cnt[0], b = cnt[1], total = a + b;
+    var el = document.getElementById("napStatus");
+    el.classList.remove("ready");
+    if(total === 0){
+      el.innerHTML = "Нажмите на корж, чтобы закрасить его в цвет команды-победителя";
+      wasComplete = false; return;
+    }
+    if(total < 7){
+      var lead = a>b ? state.teams[0].name : (b>a ? state.teams[1].name : null);
+      el.innerHTML = "Закрашено <b>"+total+"</b> из 7 коржей" +
+        (lead ? (" · впереди «"+lead+"»") : " · пока поровну");
+      wasComplete = false; return;
+    }
+    var win = a>b ? 0 : 1;
+    el.classList.add("ready");
+    el.innerHTML = "Наполеон готов! Больше всего коржей у команды «<b>"+state.teams[win].name+"</b>»: "+Math.max(a,b)+" из 7";
+    if(!wasComplete){ wasComplete = true; celebrate(); }
+  }
+
+  function applyNames(){
+    document.getElementById("napStack").classList.toggle("names-off", !state.showNames);
+  }
+
+  function updateAll(){
+    for(var i=0;i<LAYERS.length;i++){
+      var L = LAYERS[i];
+      applyLayer(document.getElementById("layer-"+L.id), state.paint[L.id] || 0);
+    }
+    updateTeams();
+    updateStatus();
+  }
+
+  function cycle(id, el){
+    var cur = state.paint[id] || 0;
+    state.paint[id] = (cur + 1) % 3;
+    applyLayer(el, state.paint[id]);
+    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+    updateTeams(); updateStatus(); saveState();
+  }
+
+  function celebrate(){
+    var wrap = document.getElementById("napConfetti");
+    var cols = [state.teams[0].color, state.teams[1].color, "#e3b96a", "#f3d489", "#fff4dd"];
+    for(var i=0;i<70;i++){
+      var b = document.createElement("span");
+      b.className = "nap-conf";
+      b.style.left = rand(0,100)+"vw";
+      b.style.top = rand(-20,-2)+"vh";
+      b.style.background = cols[(Math.random()*cols.length)|0];
+      b.style.width = rand(7,12)+"px";
+      b.style.height = rand(10,16)+"px";
+      b.style.animationDuration = rand(2.4,4.2)+"s";
+      b.style.animationDelay = rand(0,.5)+"s";
+      wrap.appendChild(b);
+      (function(node){ setTimeout(function(){ node.remove(); }, 5200); })(b);
+    }
+  }
+
+  function bindTeams(){
+    var cards = document.querySelectorAll(".nap-team");
+    for(var n=0;n<cards.length;n++){
+      (function(card){
+        var i = +card.dataset.team;
+        var inp = card.querySelector(".nap-name-input");
+        inp.value = state.teams[i].name;
+        inp.addEventListener("input", function(){ state.teams[i].name = inp.value; updateStatus(); saveState(); });
+        var sw = card.querySelector(".nap-swatch");
+        sw.value = toHex(state.teams[i].color);
+        sw.addEventListener("input", function(){ state.teams[i].color = sw.value; updateAll(); saveState(); });
+      })(cards[n]);
+    }
+  }
+
+  function bindControls(){
+    var namesCb = document.getElementById("napNames");
+    namesCb.checked = state.showNames;
+    namesCb.addEventListener("change", function(){ state.showNames = namesCb.checked; applyNames(); saveState(); });
+
+    var resetBtn = document.getElementById("napReset");
+    var resetArmed = false, resetTimer = null;
+    function disarmReset(){ resetArmed = false; resetBtn.textContent = "Сбросить"; resetBtn.classList.remove("arm"); }
+    resetBtn.addEventListener("click", function(){
+      if(!resetArmed){
+        resetArmed = true;
+        resetBtn.textContent = "Точно сбросить?";
+        resetBtn.classList.add("arm");
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(disarmReset, 3000);
+        return;
+      }
+      clearTimeout(resetTimer); disarmReset();
+      state.paint = {}; wasComplete = false; updateAll(); saveState();
+    });
+
+    var fs = document.getElementById("napFs");
+    fs.addEventListener("click", function(){
+      if(!document.fullscreenElement){
+        if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+      }else{
+        if(document.exitFullscreen) document.exitFullscreen();
+      }
+    });
+    document.addEventListener("fullscreenchange", function(){
+      fs.textContent = document.fullscreenElement ? "Выйти из полного экрана" : "На весь экран";
+    });
+  }
+
+  // ----- старт -----
+  buildCake();
+  bindTeams();
+  bindControls();
+  applyNames();
+  updateAll();
+})();
+</script>
+</body>
+</html>
