@@ -59,68 +59,39 @@
     font-size:clamp(40px,6vw,62px); color:var(--clr,#fff)}
   .nap-score-sub{font-size:11px; color:var(--muted); letter-spacing:.16em; text-transform:uppercase; margin-top:5px}
 
-  /* cake */
-  .nap-cake{position:relative; width:clamp(280px,42vw,458px)}
-  .nap-glow{position:absolute; left:50%; top:44%; transform:translate(-50%,-50%);
-    width:168%; height:158%; border-radius:50%; z-index:0; pointer-events:none;
-    background:radial-gradient(circle, rgba(244,206,128,.24), rgba(244,206,128,0) 62%); filter:blur(8px)}
-  .nap-stack{position:relative; z-index:2; border-radius:9px; filter:drop-shadow(0 24px 30px rgba(0,0,0,.55))}
+  /* cake (SVG slice) */
+  .nap-cakebox{position:relative; width:clamp(280px,44vw,468px)}
+  .nap-svg{display:block; width:100%; height:auto; overflow:visible;
+    filter:drop-shadow(0 24px 26px rgba(0,0,0,.5)) drop-shadow(0 8px 12px rgba(0,0,0,.34))}
+  .nap-svg.names-off .nap-lname{display:none}
 
-  .nap-topping{position:relative; z-index:2; height:clamp(26px,3.4vw,34px);
-    border-radius:14px 12px 6px 5px; overflow:visible;
-    background:linear-gradient(180deg,#f7e7c2 0%, #ecd6a6 60%, #e3ca96 100%);
-    box-shadow:inset 0 -4px 7px rgba(170,128,68,.30), inset 0 2px 3px rgba(255,255,255,.5)}
+  .nap-lyr{opacity:0; transform:translateY(13px);
+    transition:opacity .55s ease, transform .55s ease}
+  .nap-lyr.shown{opacity:1; transform:translateY(0)}
+  .nap-hit{pointer-events:none; cursor:pointer}
+  .nap-lyr.shown .nap-hit{pointer-events:all}
+  .nap-lyr.flash{animation:napflash .5s ease}
+  @keyframes napflash{0%{filter:none} 35%{filter:brightness(1.16)} 100%{filter:none}}
+  .nap-pastry,.nap-side,.nap-badge,.nap-badge-t,.nap-lname{transition:fill .22s ease}
+  .nap-lname{paint-order:stroke; stroke-linejoin:round;
+    font-family:Georgia,"Times New Roman",serif; letter-spacing:.01em}
 
-  .nap-crumb{position:absolute; border-radius:50%; pointer-events:none}
-  .nap-crumb.flake{border-radius:1.5px}
-
-  .nap-layer{position:relative; height:clamp(42px,5.2vw,58px); overflow:hidden; cursor:pointer; user-select:none;
-    touch-action:manipulation; transition:filter .25s ease, transform .25s ease}
-  .nap-layer.is-bottom{border-radius:0 0 10px 10px}
-  .nap-layer.is-bottom .nap-pastry{border-radius:0 0 10px 10px}
-  .nap-layer:hover{filter:brightness(1.05)}
-  .nap-layer.flash{animation:napflash .5s ease}
-  @keyframes napflash{0%{transform:scale(1)} 35%{transform:scale(1.028)} 100%{transform:scale(1)}}
-
-  .nap-pastry{position:absolute; left:0; right:0; bottom:0; height:54%;
-    background:linear-gradient(180deg,#ecc67e 0%,#dca85a 50%,#c5913f 100%);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.16), inset 0 -3px 5px rgba(90,55,15,.25)}
-  .nap-flake{position:absolute; inset:0; pointer-events:none; background:
-    repeating-linear-gradient(180deg,
-      rgba(0,0,0,.085) 0 1px,
-      rgba(255,255,255,.075) 1px 2px,
-      transparent 2px 3.5px)}
-  .nap-gloss{position:absolute; left:0; right:0; top:0; height:46%; pointer-events:none;
-    background:linear-gradient(180deg, rgba(255,255,255,.26), rgba(255,255,255,0))}
-  .nap-sides{position:absolute; inset:0; pointer-events:none;
-    background:linear-gradient(90deg, rgba(0,0,0,.18), transparent 10%, transparent 90%, rgba(0,0,0,.18))}
-
-  .nap-cream{position:absolute; left:0; right:0; top:0; height:46%;
-    background:linear-gradient(180deg,#fffaf0 0%,#fbf3da 50%,#f3e7c5 100%);
-    box-shadow:inset 0 3px 5px rgba(120,80,30,.15), inset 0 -1px 2px rgba(120,80,30,.10); overflow:hidden}
-
-  .nap-badge{position:absolute; left:9px; top:23%; transform:translateY(-50%); z-index:4;
-    width:19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    font-family:Georgia,serif; font-size:11px; font-weight:700; border:1.5px solid rgba(255,255,255,.55)}
-  .nap-lname{position:absolute; left:38px; right:12px; top:23%; transform:translateY(-50%); z-index:4;
-    text-align:center; font-size:clamp(12px,1.55vw,15.5px); font-weight:600; letter-spacing:.02em;
-    color:#4a3413; text-shadow:0 1px 0 rgba(255,255,255,.55);
-    white-space:nowrap; pointer-events:none; user-select:none}
-  .nap-stack.names-off .nap-lname{display:none}
-
-  .nap-sidecrumb{position:absolute; top:0; height:100%; width:12px; z-index:3; pointer-events:none}
-  .nap-sidecrumb.left{left:-3px}
-  .nap-sidecrumb.right{right:-3px}
-
-  .nap-plate{position:absolute; left:50%; bottom:-18px; transform:translateX(-50%);
-    width:128%; height:42px; border-radius:50%; z-index:1;
-    background:radial-gradient(60% 100% at 50% 30%, #f3ecdd, #ddd2bd 70%, #c9bca2 100%);
-    box-shadow:0 16px 28px rgba(0,0,0,.46), inset 0 2px 4px rgba(255,255,255,.5)}
-  .nap-plate::after{content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    width:86%; height:60%; border-radius:50%; box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
+  /* timer */
+  .nap-timerwrap{margin-top:24px; text-align:center; user-select:none}
+  .nap-round{font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
+  .nap-clock{margin-top:4px;
+    font-family:"SFMono-Regular",ui-monospace,Menlo,Consolas,monospace; font-weight:600;
+    font-size:clamp(42px,7.5vw,62px); line-height:1.04; color:#f0dcae; letter-spacing:.04em;
+    text-shadow:0 2px 18px rgba(0,0,0,.5); font-variant-numeric:tabular-nums}
+  .nap-timerwrap.running .nap-clock{color:#f6e6bb}
+  .nap-timerwrap.ended .nap-clock{color:#ef9a92; animation:napblink 1s steps(2,start) infinite}
+  .nap-timerwrap.brk .nap-clock{color:#a9cdee}
+  .nap-timerwrap.brk .nap-round{color:#90b6da}
+  .nap-timerwrap.brk.ended .nap-clock{color:#a9cdee; animation:napblink 1s steps(2,start) infinite}
+  @keyframes napblink{50%{opacity:.42}}
 
   /* status + controls */
-  .nap-status{margin-top:34px; text-align:center; min-height:24px; max-width:520px;
+  .nap-status{margin-top:18px; text-align:center; min-height:24px; max-width:520px;
     font-size:clamp(13px,1.7vw,16px); color:var(--muted); letter-spacing:.03em; line-height:1.5}
   .nap-status b{color:var(--ink); font-weight:600}
   .nap-status.ready{color:#f0dcae; font-size:clamp(14px,1.9vw,18px)}
@@ -129,10 +100,27 @@
   .nap-btn{font:inherit; font-size:13px; letter-spacing:.05em; color:var(--ink);
     background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
     padding:10px 18px; border-radius:999px; cursor:pointer; touch-action:manipulation;
-    transition:background .2s, transform .1s}
+    transition:background .2s, transform .1s, box-shadow .2s}
   .nap-btn.arm{background:rgba(211,75,66,.28); border-color:rgba(211,75,66,.65); color:#ffd9d4}
+  .nap-btn.due{background:rgba(217,184,120,.26); border-color:rgba(217,184,120,.6); color:#f3e2bb;
+    animation:napduepulse 1.5s ease-in-out infinite}
+  @keyframes napduepulse{50%{box-shadow:0 0 0 4px rgba(217,184,120,.16)}}
   .nap-btn:hover{background:rgba(255,255,255,.12)}
   .nap-btn:active{transform:translateY(1px)}
+  .nap-btn[disabled]{opacity:.4; cursor:not-allowed; box-shadow:none; animation:none}
+  .nap-btn.primary{background:rgba(217,184,120,.18); border-color:rgba(217,184,120,.42); color:#f4e6c2}
+  .nap-btn.primary:hover{background:rgba(217,184,120,.28)}
+
+  .nap-field{display:inline-flex; align-items:center; gap:6px; color:var(--muted);
+    font-size:12.5px; letter-spacing:.03em;
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.13);
+    padding:7px 12px; border-radius:999px}
+  .nap-field input{width:44px; text-align:center; font:inherit; color:var(--ink);
+    background:rgba(0,0,0,.22); border:1px solid rgba(255,255,255,.14); border-radius:8px;
+    padding:4px 2px; outline:none; -moz-appearance:textfield}
+  .nap-field input::-webkit-outer-spin-button,.nap-field input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0}
+  .nap-field input:focus{border-color:var(--gold)}
+
   .nap-check{display:inline-flex; align-items:center; gap:8px; cursor:pointer;
     font-size:13px; letter-spacing:.04em; color:var(--ink);
     background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
@@ -148,8 +136,8 @@
   @keyframes napfall{to{transform:translateY(112vh) rotate(560deg); opacity:.9}}
 
   /* focus + responsive */
-  .nap-layer:focus-visible,.nap-btn:focus-visible,.nap-swatch:focus-visible,.nap-name-input:focus-visible,.nap-check:focus-within{
-    outline:2px solid var(--gold); outline-offset:2px}
+  .nap-btn:focus-visible,.nap-swatch:focus-visible,.nap-name-input:focus-visible,.nap-check:focus-within,
+  .nap-field input:focus-visible,.nap-lyr:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
   @media (max-width:720px){
     .nap-grid{flex-wrap:wrap; gap:12px}
     .nap-team{width:47%; order:1; padding:12px 10px 14px}
@@ -191,13 +179,47 @@
     </div>
 
     <div class="nap-cakecol">
-      <div class="nap-cake">
-        <div class="nap-glow"></div>
-        <div class="nap-stack" id="napStack"></div>
-        <div class="nap-sidecrumb left" id="napSideL"></div>
-        <div class="nap-sidecrumb right" id="napSideR"></div>
-        <div class="nap-plate" id="napPlate"></div>
+      <div class="nap-cakebox">
+        <svg class="nap-svg" id="napSvg" viewBox="0 0 560 580" role="img"
+             aria-label="Кусок торта Наполеон, семь слоев управленческой ситуации">
+          <defs>
+            <radialGradient id="napGlow" cx="50%" cy="40%" r="62%">
+              <stop offset="0%" stop-color="#f4ce80" stop-opacity=".26"/>
+              <stop offset="62%" stop-color="#f4ce80" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="napPlate" cx="50%" cy="34%" r="74%">
+              <stop offset="0%" stop-color="#f4ede0"/>
+              <stop offset="66%" stop-color="#ddd2bd"/>
+              <stop offset="100%" stop-color="#c5b9a0"/>
+            </radialGradient>
+            <linearGradient id="napCream" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fffdf6"/>
+              <stop offset="52%" stop-color="#fbf1d6"/>
+              <stop offset="100%" stop-color="#f3e3bb"/>
+            </linearGradient>
+            <linearGradient id="napPShade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity=".32"/>
+              <stop offset="40%" stop-color="#ffffff" stop-opacity="0"/>
+              <stop offset="100%" stop-color="#3a2408" stop-opacity=".36"/>
+            </linearGradient>
+            <linearGradient id="napTopG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ecd6a2"/>
+              <stop offset="100%" stop-color="#d3b777"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="300" cy="300" rx="252" ry="244" fill="url(#napGlow)"/>
+          <ellipse cx="315" cy="512" rx="232" ry="42" fill="url(#napPlate)"/>
+          <ellipse cx="315" cy="506" rx="150" ry="22" fill="none" stroke="#000" stroke-opacity=".09" stroke-width="2"/>
+          <ellipse cx="300" cy="520" rx="172" ry="17" fill="#000" fill-opacity=".17"/>
+          <g id="napLayers"></g>
+        </svg>
       </div>
+
+      <div class="nap-timerwrap" id="napTimer">
+        <div class="nap-round" id="napRound">Поединки не начаты</div>
+        <div class="nap-clock" id="napClock">08:00</div>
+      </div>
+
       <div class="nap-status" id="napStatus"></div>
     </div>
 
@@ -214,12 +236,18 @@
   </main>
 
   <div class="nap-controls">
-    <label class="nap-check"><input type="checkbox" id="napNames" checked><span>Показывать названия слоев</span></label>
+    <button class="nap-btn primary" id="napStart" type="button">Старт</button>
+    <button class="nap-btn" id="napNext" type="button" disabled>Следующий поединок</button>
+    <button class="nap-btn" id="napBreak" type="button" disabled>Перерыв 60 сек</button>
     <button class="nap-btn" id="napReset" type="button">Сбросить</button>
+    <label class="nap-field">Поединок:
+      <input id="napMin" type="number" min="0" max="90" step="1" value="8" inputmode="numeric" aria-label="Минут на поединок"> мин
+      <input id="napSec" type="number" min="0" max="59" step="1" value="0" inputmode="numeric" aria-label="Секунд на поединок"> сек
+    </label>
+    <label class="nap-check"><input type="checkbox" id="napNames" checked><span>Названия слоев</span></label>
     <button class="nap-btn" id="napFs" type="button">На весь экран</button>
     <div class="nap-hint">
-      Клик по коржу переключает цвет: первая команда -&gt; вторая команда -&gt; без цвета.
-      Названия и цвета команд можно менять в карточках.
+      «Старт» открывает первый корж и запускает отсчет поединка. «Следующий поединок» добавляет очередной слой и сбрасывает таймер. «Перерыв 60 сек» приостанавливает поединок и запускает минутный отсчет перерыва. Клик по коржу задает цвет победителя: первая команда, вторая команда, без цвета.
     </div>
   </div>
 
@@ -228,6 +256,7 @@
 <script>
 (function(){
   "use strict";
+  var SVGNS = "http://www.w3.org/2000/svg";
 
   var LAYERS = [
     {id:1, name:"Технический",     desc:"Материальные, предметные условия ситуации"},
@@ -239,30 +268,50 @@
     {id:7, name:"Эстетический",    desc:"Чувственное восприятие прекрасного, красоты и гармонии"}
   ];
 
+  // slice geometry (viewBox 560 x 580)
+  var FX0 = 150, FX1 = 404, FY0 = 150, FY1 = 516; // front face rectangle
+  var DX = 92, DY = -40;                           // depth vector (back is up-right)
+  var NB = 7;                                       // layers
+  var BH = (FY1 - FY0) / NB;                        // band height
+  var CREAM = 18;                                   // cream zone height inside band
+
   var DEFAULTS = {
     teams: [{name:"Группа 161", color:"#d34b42"}, {name:"Группа 162", color:"#3a78c4"}],
-    paint: {},
-    showNames: true
+    paint: {}, showNames: true, match: 0, durMin: 8, durSec: 0
   };
 
   var state = loadState();
-  var wasComplete = false;
+  var durTotal = clampDur(state.durMin, state.durSec);
+  var leftSec = durTotal;
+  var running = false, ticker = null, wasComplete = false;
+  var BREAK_SEC = 60;
+  var breakLeft = BREAK_SEC, breakRunning = false, breakEnded = false, breakTicker = null;
+
+  function clampDur(m, s){
+    m = Math.max(0, Math.min(90, m|0));
+    s = Math.max(0, Math.min(59, s|0));
+    var t = m*60 + s; if(t < 1) t = 1; return t;
+  }
 
   function loadState(){
     try{
-      var raw = localStorage.getItem("napoleon_v5");
+      var raw = localStorage.getItem("napoleon_v6");
       if(raw){
         var o = JSON.parse(raw);
-        if(o && o.teams && o.teams.length===2 && o.paint){
+        if(o && o.teams && o.teams.length === 2 && o.paint){
           if(typeof o.showNames !== "boolean") o.showNames = true;
+          o.match = Math.max(0, Math.min(NB, (o.match|0)));
+          if(typeof o.durMin !== "number") o.durMin = 8;
+          if(typeof o.durSec !== "number") o.durSec = 0;
           return o;
         }
       }
     }catch(e){}
     return JSON.parse(JSON.stringify(DEFAULTS));
   }
-  function saveState(){ try{ localStorage.setItem("napoleon_v5", JSON.stringify(state)); }catch(e){} }
+  function saveState(){ try{ localStorage.setItem("napoleon_v6", JSON.stringify(state)); }catch(e){} }
 
+  // ----- color helpers -----
   function hexToRgb(h){
     h = (h||"").replace("#","");
     if(h.length===3) h = h.split("").map(function(c){return c+c;}).join("");
@@ -275,107 +324,181 @@
   }
   function lum(h){ var c = hexToRgb(h); return 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2]; }
   function textOn(h){ return lum(h) > 150 ? "#3a2a12" : "#fff8ee"; }
-  function shadowOn(h){ return lum(h) > 150 ? "rgba(255,255,255,.45)" : "rgba(0,0,0,.42)"; }
   function toHex(c){
     if(/^#[0-9a-f]{6}$/i.test(c)) return c;
     if(/^#[0-9a-f]{3}$/i.test(c)) return "#"+c.slice(1).split("").map(function(x){return x+x;}).join("");
     return "#888888";
   }
   function rand(a,b){ return a + Math.random()*(b-a); }
+  function rj(a){ return (Math.random()*2-1)*a; }
+  function f1(n){ return Math.round(n*10)/10; }
 
-  // ----- сборка торта -----
-  function buildLayer(L){
-    var el = document.createElement("div");
-    el.className = "nap-layer"; el.id = "layer-"+L.id; el.tabIndex = 0;
-    el.setAttribute("role","button");
-    el.setAttribute("aria-label","Слой "+L.id+", "+L.name);
-    if(L.id === 1) el.classList.add("is-bottom");
-    el.innerHTML =
-      '<div class="nap-pastry"><div class="nap-flake"></div><div class="nap-gloss"></div><div class="nap-sides"></div></div>' +
-      '<div class="nap-cream"></div>' +
-      '<span class="nap-badge">'+L.id+'</span>' +
-      '<span class="nap-lname">'+L.name+'</span>';
-    el.addEventListener("click", function(){ cycle(L.id, el); });
-    el.addEventListener("keydown", function(e){
-      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); cycle(L.id, el); }
-    });
-    el.addEventListener("mouseenter", function(){
-      document.getElementById("napStatus").innerHTML = "<b>Слой "+L.id+". "+L.name+":</b> "+L.desc;
-    });
-    el.addEventListener("mouseleave", updateStatus);
-    return el;
+  function E(tag, attrs){
+    var e = document.createElementNS(SVGNS, tag);
+    if(attrs){ for(var k in attrs) e.setAttribute(k, attrs[k]); }
+    return e;
   }
 
-  function makeCrumb(parent, opts){
-    var c = document.createElement("span");
-    c.className = "nap-crumb" + (opts.flake ? " flake" : "");
-    c.style.width = opts.size + "px";
-    c.style.height = (opts.flake ? opts.size*0.7 : opts.size) + "px";
-    c.style.left = opts.left; c.style.top = opts.top;
-    c.style.background = opts.color;
-    if(opts.shadow) c.style.boxShadow = "0 1px 1px rgba(80,52,16,.35)";
-    if(typeof opts.rot === "number") c.style.transform = "rotate("+opts.rot+"deg)";
-    parent.appendChild(c);
+  function bandTop(i){ return FY1 - (i+1)*BH; }
+  function bandBot(i){ return FY1 - i*BH; }
+
+  // ----- broken-edge paths -----
+  function pastryPath(x0, x1, topY, botY, amp){
+    var seg = Math.max(7, Math.round((x1-x0)/20));
+    var step = (x1-x0)/seg;
+    var d = "M "+f1(x0)+" "+f1(botY);
+    d += " L "+f1(x0)+" "+f1(topY + rj(amp));
+    for(var i=1;i<=seg;i++){ d += " L "+f1(x0+step*i)+" "+f1(topY + rj(amp)); }
+    d += " L "+f1(x1)+" "+f1(botY - Math.abs(rj(amp))*0.7);
+    for(var j=seg-1;j>=1;j--){ d += " L "+f1(x0+step*j)+" "+f1(botY - Math.abs(rj(amp))*0.55); }
+    d += " Z";
+    return d;
+  }
+  // jagged side boundaries; each boundary is shared by the two slabs that meet on it,
+  // so neighbouring slabs tile without gaps even though the edge is broken
+  var SIDEB = [];
+  function buildSideBoundaries(){
+    SIDEB = [];
+    var amp = 2.5, seg = 6;
+    for(var k=0;k<=NB;k++){
+      var y = FY1 - k*BH, pts = [];
+      for(var s=0;s<=seg;s++){
+        var t = s/seg, x = FX1 + DX*t, yy = y + DY*t;
+        if(s !== 0 && s !== seg) yy += rj(amp);
+        pts.push([x, yy]);
+      }
+      SIDEB.push(pts);
+    }
+  }
+  function sidePathBand(i){
+    var b0 = SIDEB[i], b1 = SIDEB[i+1], k;
+    var d = "M "+f1(b0[0][0])+" "+f1(b0[0][1]);
+    for(k=1;k<b0.length;k++) d += " L "+f1(b0[k][0])+" "+f1(b0[k][1]);
+    d += " L "+f1(b1[b1.length-1][0])+" "+f1(b1[b1.length-1][1]);
+    for(k=b1.length-2;k>=0;k--) d += " L "+f1(b1[k][0])+" "+f1(b1[k][1]);
+    return d + " Z";
+  }
+  function capPath(ti){
+    var yT = FY1 - ti*BH, b = SIDEB[ti], k;
+    var d = "M "+f1(FX0)+" "+f1(yT)+" L "+f1(FX1)+" "+f1(yT);
+    for(k=1;k<b.length;k++) d += " L "+f1(b[k][0])+" "+f1(b[k][1]);
+    return d + " Z";
+  }
+  function ptInTri(A, B, C){
+    var r1 = Math.random(), r2 = Math.random();
+    if(r1 + r2 > 1){ r1 = 1 - r1; r2 = 1 - r2; }
+    return [ A[0] + r1*(B[0]-A[0]) + r2*(C[0]-A[0]),
+             A[1] + r1*(B[1]-A[1]) + r2*(C[1]-A[1]) ];
+  }
+  function addCrumbs(cap, yT){
+    var A = [FX0, yT], B = [FX1, yT], C = [FX1+DX, yT+DY];
+    var tan = ["#d9ab5d","#c4953f","#e3bd72","#b07f2c","#caa24f","#a87327"];
+    var dark = ["#8f6320","#7c531a"];
+    var i, p, col, r;
+    for(i=0;i<24;i++){
+      p = ptInTri(A,B,C);
+      col = Math.random()<0.2 ? dark[(Math.random()*dark.length)|0] : tan[(Math.random()*tan.length)|0];
+      r = Math.random()<0.16 ? rand(2.4,4.0) : rand(1.0,2.5);
+      cap.appendChild(E("circle", {cx:f1(p[0]), cy:f1(p[1]), r:f1(r), fill:col, "fill-opacity":(0.85+Math.random()*0.15).toFixed(2)}));
+    }
+    for(i=0;i<6;i++){
+      p = ptInTri(A,B,C);
+      cap.appendChild(E("circle", {cx:f1(p[0]), cy:f1(p[1]), r:f1(rand(0.7,1.5)), fill:"#fffaf0", "fill-opacity":".85"}));
+    }
+  }
+
+  // ----- build one layer (front band + side slab + triangular top) -----
+  function buildLayer(i){
+    var L = LAYERS[i];
+    var bt = bandTop(i), bb = bandBot(i), pt = bt + CREAM, pmid = (pt + bb) / 2;
+
+    var g = E("g", {"class":"nap-lyr", "data-id":String(L.id), "role":"button",
+      "tabindex":"-1", "aria-hidden":"true", "aria-label":"Слой "+L.id+", "+L.name});
+
+    // side cut (depth) with broken edges
+    g.appendChild(E("path", {"class":"nap-side", d:sidePathBand(i),
+      stroke:"rgba(40,24,6,.4)", "stroke-width":"1"}));
+
+    // cream behind the whole band
+    g.appendChild(E("rect", {x:f1(FX0), y:f1(bt-0.6), width:f1(FX1-FX0), height:f1(BH+1.2), fill:"url(#napCream)"}));
+
+    // pastry with broken edges
+    var pp = pastryPath(FX0, FX1, pt, bb, 2.7);
+    g.appendChild(E("path", {"class":"nap-pastry", d:pp}));
+    g.appendChild(E("path", {d:pp, fill:"url(#napPShade)", "pointer-events":"none"}));
+
+    // triangular top with crumbs (covered by the next layer when it appears)
+    var cap = E("g", {"pointer-events":"none"});
+    cap.appendChild(E("path", {d:capPath(i+1), fill:"url(#napTopG)", stroke:"rgba(120,84,28,.4)", "stroke-width":"1"}));
+    addCrumbs(cap, bt);
+    g.appendChild(cap);
+
+    // number badge
+    g.appendChild(E("circle", {"class":"nap-badge", cx:f1(FX0+19), cy:f1(pmid), r:"10.5", "stroke-width":"1.5", "pointer-events":"none"}));
+    var bt2 = E("text", {"class":"nap-badge-t", x:f1(FX0+19), y:f1(pmid+4), "text-anchor":"middle",
+      "font-size":"13", "font-weight":"700", "font-family":"Georgia,serif", "pointer-events":"none"});
+    bt2.textContent = String(L.id);
+    g.appendChild(bt2);
+
+    // label
+    var lab = E("text", {"class":"nap-lname", x:f1((FX0+FX1)/2+7), y:f1(pmid+5.5), "text-anchor":"middle",
+      "font-size":"16.5", "font-weight":"600", "stroke-width":"3", "pointer-events":"none"});
+    lab.textContent = L.name;
+    g.appendChild(lab);
+
+    // transparent hit area over the front band
+    g.appendChild(E("rect", {"class":"nap-hit", x:f1(FX0), y:f1(bt), width:f1(FX1-FX0), height:f1(BH), fill:"transparent"}));
+
+    g.addEventListener("click", function(){ onLayerClick(L, g); });
+    g.addEventListener("keydown", function(e){
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); onLayerClick(L, g); }
+    });
+    g.addEventListener("mouseenter", function(){
+      if(g.classList.contains("shown"))
+        document.getElementById("napStatus").innerHTML = "<b>Слой "+L.id+". "+L.name+":</b> "+L.desc;
+    });
+    g.addEventListener("mouseleave", updateStatus);
+
+    applyLayer(g, state.paint[L.id] || 0);
+    return g;
   }
 
   function buildCake(){
-    var stack = document.getElementById("napStack");
-    var tan = ["#d8ab5d","#c4953f","#b07f2c","#e3bd72","#a87327","#caa24f"];
-    var dark = ["#8f6320","#7c531a"];
-
-    var top = document.createElement("div");
-    top.className = "nap-topping";
-    for(var i=0;i<84;i++){
-      var big = Math.random() < 0.18;
-      makeCrumb(top, {
-        size: big ? rand(5,8) : rand(2.5,5),
-        left: rand(-1,99)+"%", top: rand(-6,16)+"px",
-        color: tan[(Math.random()*tan.length)|0],
-        flake: Math.random() < 0.3, shadow: true, rot: rand(-40,40)
-      });
-    }
-    for(var d=0; d<10; d++){
-      makeCrumb(top, {size: rand(2,4), left: rand(0,100)+"%", top: rand(-4,15)+"px",
-        color: dark[(Math.random()*dark.length)|0], shadow: false});
-    }
-    for(var g=0; g<9; g++){
-      makeCrumb(top, {size: rand(1.5,3), left: rand(2,98)+"%", top: rand(-3,13)+"px",
-        color: "rgba(255,250,242,.92)", shadow: false});
-    }
-    stack.appendChild(top);
-
-    for(var k=LAYERS.length-1;k>=0;k--){ stack.appendChild(buildLayer(LAYERS[k])); }
-
-    ["napSideL","napSideR"].forEach(function(sid){
-      var strip = document.getElementById(sid);
-      for(var n=0;n<28;n++){
-        makeCrumb(strip, {size: rand(2,6), left: rand(0,11)+"px", top: rand(1,99)+"%",
-          color: tan[(Math.random()*tan.length)|0], shadow: true, rot: rand(-30,30)});
-      }
-    });
-
-    var plate = document.getElementById("napPlate");
-    for(var j=0;j<9;j++){
-      makeCrumb(plate, {size: rand(2,5), left: rand(12,88)+"%", top: rand(20,72)+"%",
-        color: tan[(Math.random()*tan.length)|0], shadow: false});
-    }
+    var host = document.getElementById("napLayers");
+    for(var i=0;i<NB;i++){ host.appendChild(buildLayer(i)); } // bottom first, top last (on top)
   }
 
-  // ----- отрисовка состояния -----
-  function applyLayer(el, p){
-    var pastry = el.querySelector(".nap-pastry");
-    var badge = el.querySelector(".nap-badge");
+  // ----- per-layer color state -----
+  function applyLayer(g, p){
+    var pastry = g.querySelector(".nap-pastry");
+    var side   = g.querySelector(".nap-side");
+    var badge  = g.querySelector(".nap-badge");
+    var badgeT = g.querySelector(".nap-badge-t");
+    var lab    = g.querySelector(".nap-lname");
     if(p === 0){
-      pastry.style.background = "linear-gradient(180deg,#ecc67e 0%,#dca85a 50%,#c5913f 100%)";
-      badge.style.background = "rgba(216,168,77,.95)";
-      badge.style.color = "#5b3d12";
-      badge.style.borderColor = "rgba(255,255,255,.6)";
+      pastry.setAttribute("fill", "#d8a85a");
+      side.setAttribute("fill", shade("#b07f2c", -0.16));
+      badge.setAttribute("fill", "#e0b256");
+      badge.setAttribute("stroke", "rgba(255,255,255,.7)");
+      badgeT.setAttribute("fill", "#5b3d12");
+      lab.setAttribute("fill", "#4a3413");
+      lab.setAttribute("stroke", "rgba(255,255,255,.55)");
     }else{
       var c = state.teams[p-1].color;
-      pastry.style.background = "linear-gradient(180deg,"+shade(c,.22)+" 0%,"+c+" 50%,"+shade(c,-.20)+" 100%)";
-      badge.style.background = c;
-      badge.style.color = textOn(c);
-      badge.style.borderColor = "rgba(255,255,255,.78)";
+      pastry.setAttribute("fill", c);
+      side.setAttribute("fill", shade(c, -0.34));
+      badge.setAttribute("fill", c);
+      badge.setAttribute("stroke", "rgba(255,255,255,.85)");
+      badgeT.setAttribute("fill", textOn(c));
+      lab.setAttribute("fill", textOn(c));
+      lab.setAttribute("stroke", lum(c) > 150 ? "rgba(255,255,255,.5)" : "rgba(0,0,0,.3)");
+    }
+  }
+  function applyAllLayers(){
+    var gs = document.querySelectorAll(".nap-lyr");
+    for(var i=0;i<gs.length;i++){
+      var id = +gs[i].getAttribute("data-id");
+      applyLayer(gs[i], state.paint[id] || 0);
     }
   }
 
@@ -404,15 +527,22 @@
   function updateStatus(){
     var cnt = counts(), a = cnt[0], b = cnt[1], total = a + b;
     var el = document.getElementById("napStatus");
+    if(breakRunning){ el.classList.add("ready"); el.innerHTML = "Идет перерыв · поединок " + state.match + " на паузе"; return; }
+    if(breakEnded){ el.classList.add("ready"); el.innerHTML = "Перерыв окончен. Нажмите «Продолжить», чтобы вернуться к поединку"; return; }
     el.classList.remove("ready");
-    if(total === 0){
-      el.innerHTML = "Нажмите на корж, чтобы закрасить его в цвет команды-победителя";
+
+    if(state.match === 0){
+      el.classList.add("ready");
+      el.innerHTML = "Нажмите «Старт», чтобы открыть первый корж и запустить поединок";
       wasComplete = false; return;
     }
     if(total < 7){
       var lead = a>b ? state.teams[0].name : (b>a ? state.teams[1].name : null);
-      el.innerHTML = "Закрашено <b>"+total+"</b> из 7 коржей" +
-        (lead ? (" · впереди «"+lead+"»") : " · пока поровну");
+      var msg = total === 0
+        ? "Идет поединок " + state.match + " из 7. Закрасьте корж в цвет победителя"
+        : "Закрашено <b>"+total+"</b> из 7 коржей" + (lead ? (" · впереди «"+lead+"»") : " · пока поровну");
+      if(!running && leftSec <= 0) msg += " · время вышло, нажмите «Следующий поединок»";
+      el.innerHTML = msg;
       wasComplete = false; return;
     }
     var win = a>b ? 0 : 1;
@@ -421,25 +551,134 @@
     if(!wasComplete){ wasComplete = true; celebrate(); }
   }
 
-  function applyNames(){
-    document.getElementById("napStack").classList.toggle("names-off", !state.showNames);
-  }
-
-  function updateAll(){
-    for(var i=0;i<LAYERS.length;i++){
-      var L = LAYERS[i];
-      applyLayer(document.getElementById("layer-"+L.id), state.paint[L.id] || 0);
-    }
-    updateTeams();
-    updateStatus();
-  }
-
-  function cycle(id, el){
-    var cur = state.paint[id] || 0;
-    state.paint[id] = (cur + 1) % 3;
-    applyLayer(el, state.paint[id]);
-    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+  function onLayerClick(L, g){
+    if(!g.classList.contains("shown")) return;
+    var cur = state.paint[L.id] || 0;
+    state.paint[L.id] = (cur + 1) % 3;
+    applyLayer(g, state.paint[L.id]);
+    g.classList.remove("flash");
+    requestAnimationFrame(function(){ g.classList.add("flash"); });
     updateTeams(); updateStatus(); saveState();
+  }
+
+  // ----- reveal / timer -----
+  function fmt(s){
+    s = Math.max(0, s|0);
+    var m = (s/60)|0, ss = s%60;
+    return (m<10?"0":"")+m+":"+(ss<10?"0":"")+ss;
+  }
+  function renderTimer(){
+    var round = document.getElementById("napRound");
+    var clock = document.getElementById("napClock");
+    var w = document.getElementById("napTimer");
+    w.classList.remove("running", "ended", "brk");
+    if(breakRunning || breakEnded){
+      w.classList.add("brk");
+      round.textContent = breakEnded ? "Перерыв окончен" : "Перерыв";
+      clock.textContent = fmt(breakEnded ? 0 : breakLeft);
+      if(breakRunning) w.classList.add("running");
+      if(breakEnded) w.classList.add("ended");
+    }else{
+      round.textContent = state.match === 0 ? "Поединки не начаты" : ("Поединок " + state.match + " из " + NB);
+      clock.textContent = fmt(leftSec);
+      if(running) w.classList.add("running");
+      if(!running && leftSec <= 0 && state.match > 0) w.classList.add("ended");
+    }
+  }
+  function renderRound(){ renderTimer(); }
+  function renderClock(){ renderTimer(); }
+  function syncButtons(){
+    var sb = document.getElementById("napStart");
+    if(breakRunning || breakEnded) sb.textContent = "Продолжить";
+    else sb.textContent = running ? "Пауза" : (state.match === 0 ? "Старт" : "Продолжить");
+    sb.classList.toggle("due", breakEnded);
+
+    var nb = document.getElementById("napNext");
+    var canNext = state.match >= 1 && state.match < NB && !breakRunning;
+    nb.disabled = !canNext;
+    nb.classList.toggle("due", canNext && !running && leftSec <= 0 && !breakEnded);
+
+    var bb = document.getElementById("napBreak");
+    bb.textContent = breakRunning ? "Закончить перерыв" : "Перерыв 60 сек";
+    bb.disabled = state.match < 1;
+  }
+  function startTick(){
+    if(ticker) return;
+    running = true;
+    ticker = setInterval(onTick, 1000);
+    renderClock(); syncButtons();
+  }
+  function stopTick(){
+    if(ticker){ clearInterval(ticker); ticker = null; }
+    running = false;
+    renderClock(); syncButtons();
+  }
+  function onTick(){
+    if(leftSec <= 0){ stopTick(); return; }
+    leftSec--;
+    renderClock();
+    if(leftSec <= 0){ stopTick(); updateStatus(); }
+  }
+
+  // ----- pause break (60 s) -----
+  function clearBreakTicker(){ if(breakTicker){ clearInterval(breakTicker); breakTicker = null; } }
+  function startBreak(){
+    if(breakRunning) return;
+    if(running) stopTick();            // freeze the duel while the break runs
+    breakEnded = false;
+    breakLeft = BREAK_SEC;
+    breakRunning = true;
+    breakTicker = setInterval(onBreakTick, 1000);
+    renderTimer(); updateStatus(); syncButtons();
+  }
+  function endBreak(){                  // cancel or leave the break, no end signal
+    clearBreakTicker(); breakRunning = false; breakEnded = false;
+  }
+  function onBreakTick(){
+    if(breakLeft <= 0){ clearBreakTicker(); breakRunning = false; return; }
+    breakLeft--;
+    renderTimer();
+    if(breakLeft <= 0){
+      clearBreakTicker(); breakRunning = false; breakEnded = true;
+      renderTimer(); updateStatus(); syncButtons();
+    }
+  }
+  function onBreakBtn(){
+    if(breakRunning){ endBreak(); renderTimer(); updateStatus(); syncButtons(); }
+    else startBreak();
+  }
+
+  function revealLayer(n){
+    var g = document.querySelector('.nap-lyr[data-id="'+n+'"]');
+    if(!g) return;
+    g.classList.add("shown");
+    g.setAttribute("tabindex", "0");
+    g.setAttribute("aria-hidden", "false");
+  }
+  function hideAllLayers(){
+    var gs = document.querySelectorAll(".nap-lyr");
+    for(var i=0;i<gs.length;i++){
+      gs[i].classList.remove("shown", "flash");
+      gs[i].setAttribute("tabindex", "-1");
+      gs[i].setAttribute("aria-hidden", "true");
+    }
+  }
+
+  function startOrResume(){
+    if(state.match === 0){
+      state.match = 1; leftSec = durTotal;
+      revealLayer(1); renderRound();
+    }
+    startTick(); saveState();
+  }
+  function nextMatch(){
+    endBreak();
+    if(state.match === 0){ startOrResume(); return; }
+    if(state.match >= NB) return;
+    state.match++; leftSec = durTotal;
+    revealLayer(state.match);
+    renderRound(); renderClock();
+    startTick(); saveState();
   }
 
   function celebrate(){
@@ -460,6 +699,7 @@
     }
   }
 
+  // ----- bindings -----
   function bindTeams(){
     var cards = document.querySelectorAll(".nap-team");
     for(var n=0;n<cards.length;n++){
@@ -470,12 +710,38 @@
         inp.addEventListener("input", function(){ state.teams[i].name = inp.value; updateStatus(); saveState(); });
         var sw = card.querySelector(".nap-swatch");
         sw.value = toHex(state.teams[i].color);
-        sw.addEventListener("input", function(){ state.teams[i].color = sw.value; updateAll(); saveState(); });
+        sw.addEventListener("input", function(){ state.teams[i].color = sw.value; applyAllLayers(); updateTeams(); updateStatus(); saveState(); });
       })(cards[n]);
     }
   }
 
+  function applyNames(){
+    document.getElementById("napSvg").classList.toggle("names-off", !state.showNames);
+  }
+
+  function readDuration(){
+    var m = parseInt(document.getElementById("napMin").value, 10); if(isNaN(m)) m = 0;
+    var s = parseInt(document.getElementById("napSec").value, 10); if(isNaN(s)) s = 0;
+    state.durMin = Math.max(0, Math.min(90, m));
+    state.durSec = Math.max(0, Math.min(59, s));
+    durTotal = clampDur(state.durMin, state.durSec);
+    if(!running){ leftSec = durTotal; renderClock(); }
+    syncButtons(); saveState();
+  }
+
   function bindControls(){
+    document.getElementById("napMin").value = state.durMin;
+    document.getElementById("napSec").value = state.durSec;
+    document.getElementById("napMin").addEventListener("change", readDuration);
+    document.getElementById("napSec").addEventListener("change", readDuration);
+
+    document.getElementById("napStart").addEventListener("click", function(){
+      if(breakRunning || breakEnded){ endBreak(); startOrResume(); return; }
+      if(running) stopTick(); else startOrResume();
+    });
+    document.getElementById("napNext").addEventListener("click", nextMatch);
+    document.getElementById("napBreak").addEventListener("click", onBreakBtn);
+
     var namesCb = document.getElementById("napNames");
     namesCb.checked = state.showNames;
     namesCb.addEventListener("change", function(){ state.showNames = namesCb.checked; applyNames(); saveState(); });
@@ -493,7 +759,11 @@
         return;
       }
       clearTimeout(resetTimer); disarmReset();
-      state.paint = {}; wasComplete = false; updateAll(); saveState();
+      stopTick(); endBreak();
+      state.match = 0; leftSec = durTotal; state.paint = {}; wasComplete = false;
+      hideAllLayers(); applyAllLayers();
+      renderRound(); renderClock();
+      updateTeams(); updateStatus(); syncButtons(); saveState();
     });
 
     var fs = document.getElementById("napFs");
@@ -509,12 +779,18 @@
     });
   }
 
-  // ----- старт -----
+  // ----- start -----
+  buildSideBoundaries();
   buildCake();
   bindTeams();
   bindControls();
   applyNames();
-  updateAll();
+  renderRound();
+  renderClock();
+  for(var r=1;r<=state.match;r++) revealLayer(r);
+  updateTeams();
+  updateStatus();
+  syncButtons();
 })();
 </script>
 </body>
