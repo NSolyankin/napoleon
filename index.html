@@ -61,8 +61,7 @@
 
   /* cake (SVG slice) */
   .nap-cakebox{position:relative; width:clamp(280px,44vw,468px)}
-  .nap-svg{display:block; width:100%; height:auto; overflow:visible;
-    filter:drop-shadow(0 24px 26px rgba(0,0,0,.5)) drop-shadow(0 8px 12px rgba(0,0,0,.34))}
+  .nap-svg{display:block; width:100%; height:auto; overflow:visible}
   .nap-svg.names-off .nap-lname{display:none}
 
   .nap-lyr{opacity:0; transform:translateY(13px);
@@ -180,7 +179,7 @@
 
     <div class="nap-cakecol">
       <div class="nap-cakebox">
-        <svg class="nap-svg" id="napSvg" viewBox="0 0 560 580" role="img"
+        <svg class="nap-svg" id="napSvg" viewBox="0 0 560 580" role="group"
              aria-label="Кусок торта Наполеон, семь слоев управленческой ситуации">
           <defs>
             <radialGradient id="napGlow" cx="50%" cy="40%" r="62%">
@@ -192,25 +191,11 @@
               <stop offset="66%" stop-color="#ddd2bd"/>
               <stop offset="100%" stop-color="#c5b9a0"/>
             </radialGradient>
-            <linearGradient id="napCream" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#fffdf6"/>
-              <stop offset="52%" stop-color="#fbf1d6"/>
-              <stop offset="100%" stop-color="#f3e3bb"/>
-            </linearGradient>
-            <linearGradient id="napPShade" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#ffffff" stop-opacity=".32"/>
-              <stop offset="40%" stop-color="#ffffff" stop-opacity="0"/>
-              <stop offset="100%" stop-color="#3a2408" stop-opacity=".36"/>
-            </linearGradient>
-            <linearGradient id="napTopG" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#ecd6a2"/>
-              <stop offset="100%" stop-color="#d3b777"/>
-            </linearGradient>
           </defs>
           <ellipse cx="300" cy="300" rx="252" ry="244" fill="url(#napGlow)"/>
           <ellipse cx="315" cy="512" rx="232" ry="42" fill="url(#napPlate)"/>
           <ellipse cx="315" cy="506" rx="150" ry="22" fill="none" stroke="#000" stroke-opacity=".09" stroke-width="2"/>
-          <ellipse cx="300" cy="520" rx="172" ry="17" fill="#000" fill-opacity=".17"/>
+          <ellipse cx="300" cy="522" rx="196" ry="20" fill="#000" fill-opacity=".26"/>
           <g id="napLayers"></g>
         </svg>
       </div>
@@ -247,7 +232,7 @@
     <label class="nap-check"><input type="checkbox" id="napNames" checked><span>Названия слоев</span></label>
     <button class="nap-btn" id="napFs" type="button">На весь экран</button>
     <div class="nap-hint">
-      «Старт» открывает первый корж и запускает отсчет поединка. «Следующий поединок» добавляет очередной слой и сбрасывает таймер. «Перерыв 60 сек» приостанавливает поединок и запускает минутный отсчет перерыва. Клик по коржу задает цвет победителя: первая команда, вторая команда, без цвета.
+      «Старт» открывает первый корж и запускает отсчет поединка. «Следующий поединок» добавляет очередной слой и заново запускает таймер. «Перерыв 60 сек» замораживает поединок и ведет минутный отсчет. Клик по коржу задает цвет победителя: первая команда, вторая команда, без цвета. Если таймер остановлен, смена длительности выставляет текущему поединку новое полное время. Счет, таймер и перерыв переживают перезагрузку страницы.
     </div>
   </div>
 
@@ -270,46 +255,66 @@
 
   // slice geometry (viewBox 560 x 580)
   var FX0 = 150, FX1 = 404, FY0 = 150, FY1 = 516; // front face rectangle
-  var DX = 92, DY = -40;                           // depth vector (back is up-right)
-  var NB = 7;                                       // layers
-  var BH = (FY1 - FY0) / NB;                        // band height
-  var CREAM = 18;                                   // cream zone height inside band
+  var DX = 92, DY = -40;                          // depth vector (back is up-right)
+  var NB = 7, BH = (FY1 - FY0) / NB, CREAM = 18;  // layers, band height, cream zone
+  var OUT = "#46280e", GLAZE_BASE = "#f2dfb0";    // единый мультяшный контур; светлая основа глазури
 
   var DEFAULTS = {
     teams: [{name:"Группа 161", color:"#d34b42"}, {name:"Группа 162", color:"#3a78c4"}],
-    paint: {}, showNames: true, match: 0, durMin: 8, durSec: 0
+    paint: {}, showNames: true, match: 0, durMin: 8, durSec: 0,
+    leftSec: null, running: false, endAt: null,
+    brkOn: false, brkEndAt: null, brkEnded: false, done: false
   };
-
+  var BREAK_SEC = 60;
   var state = loadState();
   var durTotal = clampDur(state.durMin, state.durSec);
-  var leftSec = durTotal;
-  var running = false, ticker = null, wasComplete = false;
-  var BREAK_SEC = 60;
-  var breakLeft = BREAK_SEC, breakRunning = false, breakEnded = false, breakTicker = null;
+  var leftSec = durTotal, running = false, ticker = null, endAt = null;
+  var breakLeft = BREAK_SEC, breakTicker = null;
 
   function clampDur(m, s){
-    m = Math.max(0, Math.min(90, m|0));
-    s = Math.max(0, Math.min(59, s|0));
-    var t = m*60 + s; if(t < 1) t = 1; return t;
+    m = Math.max(0, Math.min(90, m|0)); s = Math.max(0, Math.min(59, s|0));
+    var t = m*60 + s; return t < 1 ? 1 : t;
   }
 
-  function loadState(){
-    try{
-      var raw = localStorage.getItem("napoleon_v6");
-      if(raw){
-        var o = JSON.parse(raw);
-        if(o && o.teams && o.teams.length === 2 && o.paint){
-          if(typeof o.showNames !== "boolean") o.showNames = true;
-          o.match = Math.max(0, Math.min(NB, (o.match|0)));
-          if(typeof o.durMin !== "number") o.durMin = 8;
-          if(typeof o.durSec !== "number") o.durSec = 0;
-          return o;
-        }
-      }
-    }catch(e){}
-    return JSON.parse(JSON.stringify(DEFAULTS));
+  // ----- storage: ключ napoleon_v7; настройки из napoleon_v6 переносятся автоматически -----
+  function readKey(key){
+    try{ var raw = localStorage.getItem(key); if(raw) return JSON.parse(raw); }catch(e){}
+    return null;
   }
-  function saveState(){ try{ localStorage.setItem("napoleon_v6", JSON.stringify(state)); }catch(e){} }
+  function normTeams(t){
+    var out = [], i, src, name, col;
+    for(i = 0; i < 2; i++){
+      src = (t && t[i]) || {};
+      name = (typeof src.name === "string" && src.name) ? src.name.slice(0, 22) : DEFAULTS.teams[i].name;
+      col = (typeof src.color === "string" && /^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(src.color)) ? toHex(src.color) : DEFAULTS.teams[i].color;
+      out.push({name: name, color: col});
+    }
+    return out;
+  }
+  function normPaint(p){
+    var out = {}, k, v;
+    if(p && typeof p === "object"){ for(k = 1; k <= NB; k++){ v = p[k]|0; if(v === 1 || v === 2) out[k] = v; } }
+    return out;
+  }
+  function loadState(){
+    var o = readKey("napoleon_v7") || readKey("napoleon_v6");
+    var s = JSON.parse(JSON.stringify(DEFAULTS));
+    if(o && typeof o === "object"){
+      s.teams = normTeams(o.teams);
+      s.paint = normPaint(o.paint);
+      if(typeof o.showNames === "boolean") s.showNames = o.showNames;
+      s.match = Math.max(0, Math.min(NB, o.match|0));
+      if(typeof o.durMin === "number") s.durMin = Math.max(0, Math.min(90, o.durMin|0));
+      if(typeof o.durSec === "number") s.durSec = Math.max(0, Math.min(59, o.durSec|0));
+      if(typeof o.leftSec === "number" && o.leftSec >= 0) s.leftSec = Math.min(o.leftSec|0, 99*60);
+      if(o.running === true && typeof o.endAt === "number"){ s.running = true; s.endAt = o.endAt; }
+      if(o.brkOn === true && typeof o.brkEndAt === "number"){ s.brkOn = true; s.brkEndAt = o.brkEndAt; }
+      if(o.brkEnded === true) s.brkEnded = true;
+      if(o.done === true) s.done = true;
+    }
+    return s;
+  }
+  function saveState(){ try{ localStorage.setItem("napoleon_v7", JSON.stringify(state)); }catch(e){} }
 
   // ----- color helpers -----
   function hexToRgb(h){
@@ -322,56 +327,51 @@
     function m(v){ return Math.round(v + (f-v)*p); }
     return "rgb("+m(rgb[0])+","+m(rgb[1])+","+m(rgb[2])+")";
   }
-  function lum(h){ var c = hexToRgb(h); return 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2]; }
+  function mixRgb(hex, baseHex, t){ // пастельная глазурь: смесь цвета команды со светлой основой
+    var a = hexToRgb(toHex(hex)), b = hexToRgb(baseHex), out = [0,0,0];
+    for(var i = 0; i < 3; i++) out[i] = Math.round(a[i]*t + b[i]*(1-t));
+    return out;
+  }
+  function rgbStr(c){ return "rgb("+c[0]+","+c[1]+","+c[2]+")"; }
+  function lumRgb(c){ return 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2]; }
+  function lum(h){ return lumRgb(hexToRgb(h)); }
   function textOn(h){ return lum(h) > 150 ? "#3a2a12" : "#fff8ee"; }
   function toHex(c){
     if(/^#[0-9a-f]{6}$/i.test(c)) return c;
     if(/^#[0-9a-f]{3}$/i.test(c)) return "#"+c.slice(1).split("").map(function(x){return x+x;}).join("");
     return "#888888";
   }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(ch){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]; }); }
   function rand(a,b){ return a + Math.random()*(b-a); }
-  function rj(a){ return (Math.random()*2-1)*a; }
   function f1(n){ return Math.round(n*10)/10; }
-
   function E(tag, attrs){
     var e = document.createElementNS(SVGNS, tag);
     if(attrs){ for(var k in attrs) e.setAttribute(k, attrs[k]); }
     return e;
   }
-
   function bandTop(i){ return FY1 - (i+1)*BH; }
   function bandBot(i){ return FY1 - i*BH; }
 
-  // ----- broken-edge paths -----
-  function pastryPath(x0, x1, topY, botY, amp){
-    var seg = Math.max(7, Math.round((x1-x0)/20));
-    var step = (x1-x0)/seg;
-    var d = "M "+f1(x0)+" "+f1(botY);
-    d += " L "+f1(x0)+" "+f1(topY + rj(amp));
-    for(var i=1;i<=seg;i++){ d += " L "+f1(x0+step*i)+" "+f1(topY + rj(amp)); }
-    d += " L "+f1(x1)+" "+f1(botY - Math.abs(rj(amp))*0.7);
-    for(var j=seg-1;j>=1;j--){ d += " L "+f1(x0+step*j)+" "+f1(botY - Math.abs(rj(amp))*0.55); }
-    d += " Z";
+  // ----- edges: детерминированные фестоны вместо случайных зубцов -----
+  function waveSeg(xa, xb, y, amp, n){
+    var step = (xb - xa) / n, d = "", i;
+    for(i = 1; i <= n; i++) d += " Q " + f1(xa + step*(i-0.5)) + " " + f1(y + amp) + " " + f1(xa + step*i) + " " + f1(y);
     return d;
   }
-  // jagged side boundaries; every boundary is shared by the two slabs that meet on it,
-  // so neighbouring slabs tile without gaps even though the edge is broken.
-  // SIDEB - band edges (NB+1 lines); SIDEC - pastry/cream edge inside each band (NB lines)
-  var SIDEB = [], SIDEC = [];
-  function jagLine(y, amp, seg){
-    var pts = [];
-    for(var s=0;s<=seg;s++){
-      var t = s/seg, x = FX1 + DX*t, yy = y + DY*t;
-      if(s !== 0 && s !== seg) yy += rj(amp);
-      pts.push([x, yy]);
-    }
-    return pts;
+  function pastryPath(x0, x1, topY, botY, amp){
+    var d = "M " + f1(x0) + " " + f1(botY) + " L " + f1(x0) + " " + f1(topY);
+    d += waveSeg(x0, x1, topY, amp*1.9, 7);        // фестоны крема свисают вниз
+    d += " L " + f1(x1) + " " + f1(botY);
+    d += waveSeg(x1, x0, botY, -amp*0.8, 5);       // мягкая волна по низу
+    return d + " Z";
   }
+  // side boundaries are shared by the two slabs that meet on them, so slabs tile without gaps
+  var SIDEB = [], SIDEC = [];
+  function jagLine(y, amp, seg){ return [[FX1, y], [FX1 + DX, y + DY]]; } // ровный мультяшный срез
   function buildSideBoundaries(){
     SIDEB = []; SIDEC = [];
-    var amp = 2.5, seg = 6, k;
-    for(k=0;k<=NB;k++) SIDEB.push(jagLine(FY1 - k*BH, amp, seg));
-    for(k=0;k<NB;k++)  SIDEC.push(jagLine(bandTop(k) + CREAM, amp, seg));
+    for(var k=0;k<=NB;k++) SIDEB.push(jagLine(FY1 - k*BH, 2.5, 6));
+    for(k=0;k<NB;k++)  SIDEC.push(jagLine(bandTop(k) + CREAM, 2.5, 6));
   }
   function sideQuad(bBottom, bTop){
     var k, d = "M "+f1(bBottom[0][0])+" "+f1(bBottom[0][1]);
@@ -381,143 +381,112 @@
     return d + " Z";
   }
   function capPath(ti){
-    var yT = FY1 - ti*BH, b = SIDEB[ti], k;
-    var d = "M "+f1(FX0)+" "+f1(yT)+" L "+f1(FX1)+" "+f1(yT);
+    var yT = FY1 - ti*BH, b = SIDEB[ti], k, d = "M "+f1(FX0)+" "+f1(yT)+" L "+f1(FX1)+" "+f1(yT);
     for(k=1;k<b.length;k++) d += " L "+f1(b[k][0])+" "+f1(b[k][1]);
     return d + " Z";
   }
-  function ptInTri(A, B, C){
-    var r1 = Math.random(), r2 = Math.random();
-    if(r1 + r2 > 1){ r1 = 1 - r1; r2 = 1 - r2; }
-    return [ A[0] + r1*(B[0]-A[0]) + r2*(C[0]-A[0]),
-             A[1] + r1*(B[1]-A[1]) + r2*(C[1]-A[1]) ];
-  }
-  function addCrumbs(cap, yT){
-    var A = [FX0, yT], B = [FX1, yT], C = [FX1+DX, yT+DY];
-    var tan = ["#d9ab5d","#c4953f","#e3bd72","#b07f2c","#caa24f","#a87327"];
-    var dark = ["#8f6320","#7c531a"];
-    var i, p, col, r;
-    for(i=0;i<24;i++){
-      p = ptInTri(A,B,C);
-      col = Math.random()<0.2 ? dark[(Math.random()*dark.length)|0] : tan[(Math.random()*tan.length)|0];
-      r = Math.random()<0.16 ? rand(2.4,4.0) : rand(1.0,2.5);
-      cap.appendChild(E("circle", {cx:f1(p[0]), cy:f1(p[1]), r:f1(r), fill:col, "fill-opacity":(0.85+Math.random()*0.15).toFixed(2)}));
-    }
-    for(i=0;i<6;i++){
-      p = ptInTri(A,B,C);
-      cap.appendChild(E("circle", {cx:f1(p[0]), cy:f1(p[1]), r:f1(rand(0.7,1.5)), fill:"#fffaf0", "fill-opacity":".85"}));
+  function addCrumbs(cap, yT){ // 8 крупных детерминированных хлопьев слоеной крошки, с контуром
+    var A = [FX0, yT], B = [FX1, yT], C = [FX1 + DX, yT + DY];
+    var spots = [[0.14,0.22],[0.36,0.10],[0.58,0.16],[0.76,0.09],[0.26,0.44],[0.48,0.32],[0.66,0.22],[0.10,0.55]];
+    var cols = ["#c8953d", "#a9741f"];
+    for(var i = 0; i < spots.length; i++){
+      var u = spots[i][0], v = spots[i][1];
+      var x = A[0] + u*(B[0]-A[0]) + v*(C[0]-A[0]), y = A[1] + u*(B[1]-A[1]) + v*(C[1]-A[1]);
+      cap.appendChild(E("circle", {cx:f1(x), cy:f1(y), r:(i%3===0)?"4.2":"3", fill:cols[i%2], stroke:OUT, "stroke-width":"1.5"}));
     }
   }
 
   // ----- build one layer (front band + side slab + triangular top) -----
   function buildLayer(i){
-    var L = LAYERS[i];
-    var bt = bandTop(i), bb = bandBot(i), pt = bt + CREAM, pmid = (pt + bb) / 2;
+    var L = LAYERS[i], bt = bandTop(i), bb = bandBot(i), pt = bt + CREAM, pmid = (pt + bb) / 2;
+    var g = E("g", {"class":"nap-lyr", "data-id":String(L.id), "role":"button", "tabindex":"-1",
+      "aria-hidden":"true", "aria-label":"Слой "+L.id+", "+L.name});
 
-    var g = E("g", {"class":"nap-lyr", "data-id":String(L.id), "role":"button",
-      "tabindex":"-1", "aria-hidden":"true", "aria-label":"Слой "+L.id+", "+L.name});
+    // боковой срез: пастила (перекрашивается) + кремовая полоса; ровные края, жирный контур
+    g.appendChild(E("path", {"class":"nap-side", d:sideQuad(SIDEB[i], SIDEC[i]), stroke:OUT, "stroke-width":"2.5", "stroke-linejoin":"round"}));
+    g.appendChild(E("path", {"class":"nap-sidecream", d:sideQuad(SIDEC[i], SIDEB[i+1]), fill:"#efe0b8", stroke:OUT, "stroke-width":"2", "stroke-linejoin":"round"}));
+    // крем позади всей полосы (плоский тон)
+    g.appendChild(E("rect", {x:f1(FX0), y:f1(bt-0.6), width:f1(FX1-FX0), height:f1(BH+1.2), fill:"#fdf4dd"}));
+    // пастила с фестонами
+    g.appendChild(E("path", {"class":"nap-pastry", d:pastryPath(FX0, FX1, pt, bb, 2.7), stroke:OUT, "stroke-width":"3", "stroke-linejoin":"round"}));
 
-    // side cut (depth): pastry slab (tintable) + cream stripe above it, both with broken edges
-    g.appendChild(E("path", {"class":"nap-side", d:sideQuad(SIDEB[i], SIDEC[i]),
-      stroke:"rgba(40,24,6,.4)", "stroke-width":"1"}));
-    g.appendChild(E("path", {"class":"nap-sidecream", d:sideQuad(SIDEC[i], SIDEB[i+1]),
-      fill:"#e7d7ae", stroke:"rgba(120,92,40,.3)", "stroke-width":"0.8"}));
-
-    // cream behind the whole band
-    g.appendChild(E("rect", {x:f1(FX0), y:f1(bt-0.6), width:f1(FX1-FX0), height:f1(BH+1.2), fill:"url(#napCream)"}));
-
-    // pastry with broken edges
-    var pp = pastryPath(FX0, FX1, pt, bb, 2.7);
-    g.appendChild(E("path", {"class":"nap-pastry", d:pp}));
-    g.appendChild(E("path", {d:pp, fill:"url(#napPShade)", "pointer-events":"none"}));
-
-    // triangular top with crumbs (covered by the next layer when it appears)
+    // triangular top with gloss and crumbs (covered by the next layer when it appears)
     var cap = E("g", {"pointer-events":"none"});
-    cap.appendChild(E("path", {d:capPath(i+1), fill:"url(#napTopG)", stroke:"rgba(120,84,28,.4)", "stroke-width":"1"}));
+    cap.appendChild(E("path", {d:capPath(i+1), fill:"#e9cf8f", stroke:OUT, "stroke-width":"2.5", "stroke-linejoin":"round"}));
+    cap.appendChild(E("path", {d:"M "+f1(FX0+DX*0.3+16)+" "+f1(bt+DY*0.3)+" L "+f1(FX0+DX*0.3+118)+" "+f1(bt+DY*0.3),
+      fill:"none", stroke:"#f7e8c0", "stroke-width":"5", "stroke-linecap":"round", "stroke-opacity":".9"}));
     addCrumbs(cap, bt);
     g.appendChild(cap);
 
-    // number badge
-    g.appendChild(E("circle", {"class":"nap-badge", cx:f1(FX0+19), cy:f1(pmid), r:"10.5", "stroke-width":"1.5", "pointer-events":"none"}));
+    // number badge + label
+    g.appendChild(E("circle", {"class":"nap-badge", cx:f1(FX0+19), cy:f1(pmid), r:"11", "stroke-width":"2", "pointer-events":"none"}));
     var bt2 = E("text", {"class":"nap-badge-t", x:f1(FX0+19), y:f1(pmid+4), "text-anchor":"middle",
       "font-size":"13", "font-weight":"700", "font-family":"Georgia,serif", "pointer-events":"none"});
-    bt2.textContent = String(L.id);
-    g.appendChild(bt2);
-
-    // label
+    bt2.textContent = String(L.id); g.appendChild(bt2);
     var lab = E("text", {"class":"nap-lname", x:f1((FX0+FX1)/2+7), y:f1(pmid+5.5), "text-anchor":"middle",
       "font-size":"16.5", "font-weight":"600", "stroke-width":"3", "pointer-events":"none"});
-    lab.textContent = L.name;
-    g.appendChild(lab);
+    lab.textContent = L.name; g.appendChild(lab);
 
     // transparent hit area over the front band
     g.appendChild(E("rect", {"class":"nap-hit", x:f1(FX0), y:f1(bt), width:f1(FX1-FX0), height:f1(BH), fill:"transparent"}));
 
+    if(i === NB - 1){ // вишенка с листиком на верхнем корже
+      var deco = E("g", {"pointer-events":"none"}), chx = (FX0+FX1)/2 + DX*0.5, chy = bt + DY*0.5 - 13;
+      deco.appendChild(E("ellipse", {cx:f1(chx), cy:f1(chy+12), rx:"14", ry:"4", fill:"#000", "fill-opacity":".14"}));
+      deco.appendChild(E("path", {d:"M "+f1(chx)+" "+f1(chy-8)+" q 4 -12 14 -15", fill:"none", stroke:"#5a7a2e", "stroke-width":"3", "stroke-linecap":"round"}));
+      deco.appendChild(E("path", {d:"M "+f1(chx+13)+" "+f1(chy-22)+" q 12 -6 20 2 q -10 6 -20 -2 Z", fill:"#7aa83e", stroke:OUT, "stroke-width":"2", "stroke-linejoin":"round"}));
+      deco.appendChild(E("circle", {cx:f1(chx), cy:f1(chy), r:"11.5", fill:"#d0342c", stroke:OUT, "stroke-width":"2.5"}));
+      deco.appendChild(E("circle", {cx:f1(chx-4), cy:f1(chy-4), r:"3.4", fill:"#ffffff", "fill-opacity":".9"}));
+      g.appendChild(deco);
+    }
+
     g.addEventListener("click", function(){ onLayerClick(L, g); });
-    g.addEventListener("keydown", function(e){
-      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); onLayerClick(L, g); }
-    });
+    g.addEventListener("keydown", function(e){ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); onLayerClick(L, g); } });
     g.addEventListener("mouseenter", function(){
-      if(g.classList.contains("shown"))
-        document.getElementById("napStatus").innerHTML = "<b>Слой "+L.id+". "+L.name+":</b> "+L.desc;
+      if(g.classList.contains("shown")) document.getElementById("napStatus").innerHTML = "<b>Слой "+L.id+". "+L.name+":</b> "+L.desc;
     });
     g.addEventListener("mouseleave", updateStatus);
-
     applyLayer(g, state.paint[L.id] || 0);
     return g;
   }
-
   function buildCake(){
     var host = document.getElementById("napLayers");
-    for(var i=0;i<NB;i++){ host.appendChild(buildLayer(i)); } // bottom first, top last (on top)
+    for(var i=0;i<NB;i++) host.appendChild(buildLayer(i)); // bottom first, top last (on top)
   }
 
   // ----- per-layer color state -----
   function applyLayer(g, p){
-    var pastry = g.querySelector(".nap-pastry");
-    var side   = g.querySelector(".nap-side");
-    var badge  = g.querySelector(".nap-badge");
-    var badgeT = g.querySelector(".nap-badge-t");
-    var lab    = g.querySelector(".nap-lname");
+    var pastry = g.querySelector(".nap-pastry"), side = g.querySelector(".nap-side");
+    var badge = g.querySelector(".nap-badge"), badgeT = g.querySelector(".nap-badge-t"), lab = g.querySelector(".nap-lname");
+    var id = +g.getAttribute("data-id");
     if(p === 0){
-      pastry.setAttribute("fill", "#d8a85a");
-      side.setAttribute("fill", shade("#b07f2c", -0.16));
-      badge.setAttribute("fill", "#e0b256");
-      badge.setAttribute("stroke", "rgba(255,255,255,.7)");
+      pastry.setAttribute("fill", "#e6b96a"); side.setAttribute("fill", "#c08d3b");
+      badge.setAttribute("fill", "#e0b256"); badge.setAttribute("stroke", "rgba(255,255,255,.75)");
       badgeT.setAttribute("fill", "#5b3d12");
-      lab.setAttribute("fill", "#4a3413");
-      lab.setAttribute("stroke", "rgba(255,255,255,.55)");
+      lab.setAttribute("fill", "#4a3413"); lab.setAttribute("stroke", "rgba(255,255,255,.55)");
     }else{
-      var c = state.teams[p-1].color;
-      pastry.setAttribute("fill", c);
-      side.setAttribute("fill", shade(c, -0.34));
-      badge.setAttribute("fill", c);
-      badge.setAttribute("stroke", "rgba(255,255,255,.85)");
+      var c = state.teams[p-1].color, glaze = mixRgb(c, GLAZE_BASE, 0.65), gl = lumRgb(glaze);
+      pastry.setAttribute("fill", rgbStr(glaze));          // пастельная глазурь
+      side.setAttribute("fill", shade(c, -0.30));          // бок в насыщенном цвете команды
+      badge.setAttribute("fill", c); badge.setAttribute("stroke", "rgba(255,255,255,.9)");
       badgeT.setAttribute("fill", textOn(c));
-      lab.setAttribute("fill", textOn(c));
-      lab.setAttribute("stroke", lum(c) > 150 ? "rgba(255,255,255,.5)" : "rgba(0,0,0,.3)");
+      lab.setAttribute("fill", gl > 120 ? "#3a2a12" : "#fff8ee");
+      lab.setAttribute("stroke", gl > 120 ? "rgba(255,255,255,.55)" : "rgba(0,0,0,.35)");
     }
+    g.setAttribute("aria-label", "Слой "+id+", "+LAYERS[id-1].name+", "+(p === 0 ? "без цвета" : "закрашен командой "+state.teams[p-1].name));
   }
   function applyAllLayers(){
     var gs = document.querySelectorAll(".nap-lyr");
-    for(var i=0;i<gs.length;i++){
-      var id = +gs[i].getAttribute("data-id");
-      applyLayer(gs[i], state.paint[id] || 0);
-    }
+    for(var i=0;i<gs.length;i++){ var id = +gs[i].getAttribute("data-id"); applyLayer(gs[i], state.paint[id] || 0); }
   }
-
   function counts(){
     var a=0,b=0;
-    for(var i=0;i<LAYERS.length;i++){
-      var p = state.paint[LAYERS[i].id] || 0;
-      if(p===1) a++; else if(p===2) b++;
-    }
+    for(var i=0;i<LAYERS.length;i++){ var p = state.paint[LAYERS[i].id] || 0; if(p===1) a++; else if(p===2) b++; }
     return [a,b];
   }
 
   function updateTeams(){
-    var cards = document.querySelectorAll(".nap-team");
-    var cnt = counts();
+    var cards = document.querySelectorAll(".nap-team"), cnt = counts();
     for(var n=0;n<cards.length;n++){
       var card = cards[n], i = +card.dataset.team;
       card.style.setProperty("--clr", state.teams[i].color);
@@ -528,31 +497,37 @@
     }
   }
 
+  function setDone(v){
+    if(state.done === v) return;
+    state.done = v; saveState();
+    if(v) celebrate();
+  }
   function updateStatus(){
     var cnt = counts(), a = cnt[0], b = cnt[1], total = a + b;
     var el = document.getElementById("napStatus");
-    if(breakRunning){ el.classList.add("ready"); el.innerHTML = "Идет перерыв · поединок " + state.match + " на паузе"; return; }
-    if(breakEnded){ el.classList.add("ready"); el.innerHTML = "Перерыв окончен. Нажмите «Продолжить», чтобы вернуться к поединку"; return; }
+    if(state.brkOn){ el.classList.add("ready"); el.innerHTML = "Идет перерыв · поединок " + state.match + " на паузе"; return; }
+    if(state.brkEnded){ el.classList.add("ready"); el.innerHTML = "Перерыв окончен. Нажмите «Продолжить», чтобы вернуться к поединку"; return; }
     el.classList.remove("ready");
-
     if(state.match === 0){
       el.classList.add("ready");
       el.innerHTML = "Нажмите «Старт», чтобы открыть первый корж и запустить поединок";
-      wasComplete = false; return;
+      setDone(false); return;
     }
     if(total < 7){
       var lead = a>b ? state.teams[0].name : (b>a ? state.teams[1].name : null);
       var msg = total === 0
         ? "Идет поединок " + state.match + " из 7. Закрасьте корж в цвет победителя"
-        : "Закрашено <b>"+total+"</b> из 7 коржей" + (lead ? (" · впереди «"+lead+"»") : " · пока поровну");
-      if(!running && leftSec <= 0) msg += " · время вышло, нажмите «Следующий поединок»";
+        : "Закрашено <b>"+total+"</b> из 7 коржей" + (lead ? (" · впереди «"+esc(lead)+"»") : " · пока поровну");
+      if(!running && leftSec <= 0){
+        msg += state.match < NB ? " · время вышло, нажмите «Следующий поединок»" : " · время вышло, закрасьте оставшиеся коржи";
+      }
       el.innerHTML = msg;
-      wasComplete = false; return;
+      setDone(false); return;
     }
     var win = a>b ? 0 : 1;
     el.classList.add("ready");
-    el.innerHTML = "Наполеон готов! Больше всего коржей у команды «<b>"+state.teams[win].name+"</b>»: "+Math.max(a,b)+" из 7";
-    if(!wasComplete){ wasComplete = true; celebrate(); }
+    el.innerHTML = "Наполеон готов! Больше всего коржей у команды «<b>"+esc(state.teams[win].name)+"</b>»: "+Math.max(a,b)+" из 7";
+    setDone(true);
   }
 
   function onLayerClick(L, g){
@@ -565,23 +540,22 @@
     updateTeams(); updateStatus(); saveState();
   }
 
-  // ----- reveal / timer -----
+  // ----- timer: отсчет по моменту окончания endAt, устойчив к фону iOS и перезагрузке -----
   function fmt(s){
     s = Math.max(0, s|0);
     var m = (s/60)|0, ss = s%60;
     return (m<10?"0":"")+m+":"+(ss<10?"0":"")+ss;
   }
   function renderTimer(){
-    var round = document.getElementById("napRound");
-    var clock = document.getElementById("napClock");
+    var round = document.getElementById("napRound"), clock = document.getElementById("napClock");
     var w = document.getElementById("napTimer");
     w.classList.remove("running", "ended", "brk");
-    if(breakRunning || breakEnded){
+    if(state.brkOn || state.brkEnded){
       w.classList.add("brk");
-      round.textContent = breakEnded ? "Перерыв окончен" : "Перерыв";
-      clock.textContent = fmt(breakEnded ? 0 : breakLeft);
-      if(breakRunning) w.classList.add("running");
-      if(breakEnded) w.classList.add("ended");
+      round.textContent = state.brkEnded ? "Перерыв окончен" : "Перерыв";
+      clock.textContent = fmt(state.brkEnded ? 0 : breakLeft);
+      if(state.brkOn) w.classList.add("running");
+      if(state.brkEnded) w.classList.add("ended");
     }else{
       round.textContent = state.match === 0 ? "Поединки не начаты" : ("Поединок " + state.match + " из " + NB);
       clock.textContent = fmt(leftSec);
@@ -589,66 +563,75 @@
       if(!running && leftSec <= 0 && state.match > 0) w.classList.add("ended");
     }
   }
-  function renderRound(){ renderTimer(); }
-  function renderClock(){ renderTimer(); }
   function syncButtons(){
     var sb = document.getElementById("napStart");
-    if(breakRunning || breakEnded) sb.textContent = "Продолжить";
+    if(state.brkOn || state.brkEnded) sb.textContent = "Продолжить";
     else sb.textContent = running ? "Пауза" : (state.match === 0 ? "Старт" : "Продолжить");
-    sb.classList.toggle("due", breakEnded);
+    sb.classList.toggle("due", state.brkEnded);
+    sb.disabled = !running && leftSec <= 0 && state.match > 0 && !state.brkOn && !state.brkEnded; // время вышло
 
     var nb = document.getElementById("napNext");
-    var canNext = state.match >= 1 && state.match < NB && !breakRunning;
+    var canNext = state.match >= 1 && state.match < NB && !state.brkOn;
     nb.disabled = !canNext;
-    nb.classList.toggle("due", canNext && !running && leftSec <= 0 && !breakEnded);
+    nb.classList.toggle("due", canNext && !running && leftSec <= 0 && !state.brkEnded);
 
     var bb = document.getElementById("napBreak");
-    bb.textContent = breakRunning ? "Закончить перерыв" : "Перерыв 60 сек";
+    bb.textContent = state.brkOn ? "Закончить перерыв" : "Перерыв 60 сек";
     bb.disabled = state.match < 1;
   }
   function startTick(){
-    if(ticker) return;
-    running = true;
-    ticker = setInterval(onTick, 1000);
-    renderClock(); syncButtons();
+    if(ticker || leftSec <= 0) return;                    // фантомный запуск на 00:00 не нужен
+    running = true; endAt = Date.now() + leftSec*1000;
+    state.running = true; state.endAt = endAt; state.leftSec = leftSec;
+    ticker = setInterval(onTick, 250);
+    renderTimer(); syncButtons(); saveState();
   }
   function stopTick(){
+    if(running && endAt) leftSec = Math.max(0, Math.ceil((endAt - Date.now())/1000));
     if(ticker){ clearInterval(ticker); ticker = null; }
-    running = false;
-    renderClock(); syncButtons();
+    running = false; endAt = null;
+    state.running = false; state.endAt = null; state.leftSec = leftSec;
+    renderTimer(); syncButtons(); saveState();
   }
   function onTick(){
-    if(leftSec <= 0){ stopTick(); return; }
-    leftSec--;
-    renderClock();
-    if(leftSec <= 0){ stopTick(); updateStatus(); }
+    if(!endAt) return;
+    var ls = Math.max(0, Math.ceil((endAt - Date.now())/1000));
+    if(ls !== leftSec){ leftSec = ls; renderTimer(); }
+    if(ls <= 0){
+      clearInterval(ticker); ticker = null; running = false; endAt = null;
+      state.running = false; state.endAt = null; state.leftSec = 0;
+      renderTimer(); updateStatus(); syncButtons(); saveState();
+    }
   }
 
   // ----- pause break (60 s) -----
-  function clearBreakTicker(){ if(breakTicker){ clearInterval(breakTicker); breakTicker = null; } }
   function startBreak(){
-    if(breakRunning) return;
-    if(running) stopTick();            // freeze the duel while the break runs
-    breakEnded = false;
+    if(state.brkOn) return;
+    if(running) stopTick();                               // заморозка поединка на время перерыва
+    state.brkEnded = false; state.brkOn = true;
+    state.brkEndAt = Date.now() + BREAK_SEC*1000;
     breakLeft = BREAK_SEC;
-    breakRunning = true;
-    breakTicker = setInterval(onBreakTick, 1000);
-    renderTimer(); updateStatus(); syncButtons();
+    breakTicker = setInterval(onBreakTick, 250);
+    renderTimer(); updateStatus(); syncButtons(); saveState();
   }
-  function endBreak(){                  // cancel or leave the break, no end signal
-    clearBreakTicker(); breakRunning = false; breakEnded = false;
+  function endBreak(){                                    // отмена или выход из перерыва, без сигнала
+    if(breakTicker){ clearInterval(breakTicker); breakTicker = null; }
+    if(state.brkOn || state.brkEnded || state.brkEndAt){
+      state.brkOn = false; state.brkEnded = false; state.brkEndAt = null; saveState();
+    }
   }
   function onBreakTick(){
-    if(breakLeft <= 0){ clearBreakTicker(); breakRunning = false; return; }
-    breakLeft--;
-    renderTimer();
-    if(breakLeft <= 0){
-      clearBreakTicker(); breakRunning = false; breakEnded = true;
-      renderTimer(); updateStatus(); syncButtons();
+    if(!state.brkEndAt) return;
+    var bl = Math.max(0, Math.ceil((state.brkEndAt - Date.now())/1000));
+    if(bl !== breakLeft){ breakLeft = bl; renderTimer(); }
+    if(bl <= 0){
+      clearInterval(breakTicker); breakTicker = null;
+      state.brkOn = false; state.brkEnded = true; state.brkEndAt = null;
+      renderTimer(); updateStatus(); syncButtons(); saveState();
     }
   }
   function onBreakBtn(){
-    if(breakRunning){ endBreak(); renderTimer(); updateStatus(); syncButtons(); }
+    if(state.brkOn){ endBreak(); renderTimer(); updateStatus(); syncButtons(); }
     else startBreak();
   }
 
@@ -670,18 +653,23 @@
 
   function startOrResume(){
     if(state.match === 0){
-      state.match = 1; leftSec = durTotal;
-      revealLayer(1); renderRound();
+      state.match = 1; leftSec = durTotal; state.leftSec = leftSec;
+      revealLayer(1);
     }
-    startTick(); saveState();
+    if(leftSec > 0) startTick();
+    else { renderTimer(); syncButtons(); }                // время вышло: ждем «Следующий поединок»
+    saveState();
   }
   function nextMatch(){
     endBreak();
-    if(state.match === 0){ startOrResume(); return; }
+    if(state.match === 0){ startOrResume(); renderTimer(); updateStatus(); syncButtons(); return; }
     if(state.match >= NB) return;
+    if(ticker){ clearInterval(ticker); ticker = null; }
+    running = false; endAt = null;
     state.match++; leftSec = durTotal;
+    state.leftSec = leftSec; state.running = false; state.endAt = null;
     revealLayer(state.match);
-    renderRound(); renderClock();
+    renderTimer(); updateStatus();
     startTick(); saveState();
   }
 
@@ -712,24 +700,23 @@
         var inp = card.querySelector(".nap-name-input");
         inp.value = state.teams[i].name;
         inp.addEventListener("input", function(){ state.teams[i].name = inp.value; updateStatus(); saveState(); });
+        inp.addEventListener("change", function(){ applyAllLayers(); }); // обновить aria-подписи слоев
         var sw = card.querySelector(".nap-swatch");
         sw.value = toHex(state.teams[i].color);
         sw.addEventListener("input", function(){ state.teams[i].color = sw.value; applyAllLayers(); updateTeams(); updateStatus(); saveState(); });
       })(cards[n]);
     }
   }
-
   function applyNames(){
     document.getElementById("napSvg").classList.toggle("names-off", !state.showNames);
   }
-
   function readDuration(){
     var m = parseInt(document.getElementById("napMin").value, 10); if(isNaN(m)) m = 0;
     var s = parseInt(document.getElementById("napSec").value, 10); if(isNaN(s)) s = 0;
     state.durMin = Math.max(0, Math.min(90, m));
     state.durSec = Math.max(0, Math.min(59, s));
     durTotal = clampDur(state.durMin, state.durSec);
-    if(!running){ leftSec = durTotal; renderClock(); }
+    if(!running){ leftSec = durTotal; state.leftSec = leftSec; renderTimer(); } // правило из подсказки
     syncButtons(); saveState();
   }
 
@@ -740,10 +727,21 @@
     document.getElementById("napSec").addEventListener("change", readDuration);
 
     document.getElementById("napStart").addEventListener("click", function(){
-      if(breakRunning || breakEnded){ endBreak(); startOrResume(); return; }
+      if(state.brkOn || state.brkEnded){
+        endBreak(); startOrResume();
+        renderTimer(); updateStatus(); syncButtons();
+        return;
+      }
       if(running) stopTick(); else startOrResume();
     });
-    document.getElementById("napNext").addEventListener("click", nextMatch);
+
+    var nextGate = 0;
+    document.getElementById("napNext").addEventListener("click", function(){
+      var t = Date.now();
+      if(t - nextGate < 400) return;                      // защита от двойного тапа
+      nextGate = t;
+      nextMatch();
+    });
     document.getElementById("napBreak").addEventListener("click", onBreakBtn);
 
     var namesCb = document.getElementById("napNames");
@@ -764,24 +762,59 @@
       }
       clearTimeout(resetTimer); disarmReset();
       stopTick(); endBreak();
-      state.match = 0; leftSec = durTotal; state.paint = {}; wasComplete = false;
+      state.match = 0; leftSec = durTotal;
+      state.leftSec = null; state.running = false; state.endAt = null;
+      state.paint = {}; state.done = false;
       hideAllLayers(); applyAllLayers();
-      renderRound(); renderClock();
-      updateTeams(); updateStatus(); syncButtons(); saveState();
+      renderTimer(); updateTeams(); updateStatus(); syncButtons(); saveState();
     });
 
     var fs = document.getElementById("napFs");
-    fs.addEventListener("click", function(){
-      if(!document.fullscreenElement){
-        if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
-      }else{
-        if(document.exitFullscreen) document.exitFullscreen();
-      }
-    });
-    document.addEventListener("fullscreenchange", function(){
-      fs.textContent = document.fullscreenElement ? "Выйти из полного экрана" : "На весь экран";
-    });
+    if(!document.documentElement.requestFullscreen){
+      fs.style.display = "none";                          // iPhone: Fullscreen API недоступен, кнопку прячем
+    }else{
+      fs.addEventListener("click", function(){
+        if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else if(document.exitFullscreen) document.exitFullscreen();
+      });
+      document.addEventListener("fullscreenchange", function(){
+        fs.textContent = document.fullscreenElement ? "Выйти из полного экрана" : "На весь экран";
+      });
+    }
   }
+
+  // ----- restore timers after reload -----
+  function restoreTimers(){
+    var now = Date.now();
+    if(state.brkOn && typeof state.brkEndAt === "number"){
+      breakLeft = Math.max(0, Math.ceil((state.brkEndAt - now)/1000));
+      if(breakLeft > 0) breakTicker = setInterval(onBreakTick, 250);
+      else { state.brkOn = false; state.brkEnded = true; state.brkEndAt = null; }
+    }else if(state.brkOn){ state.brkOn = false; }
+    if(state.match === 0){
+      leftSec = durTotal;
+      state.running = false; state.endAt = null; state.leftSec = null;
+      return;
+    }
+    if(state.running && typeof state.endAt === "number" && !state.brkOn && !state.brkEnded){
+      leftSec = Math.max(0, Math.ceil((state.endAt - now)/1000));
+      if(leftSec > 0){
+        running = true; endAt = state.endAt;
+        ticker = setInterval(onTick, 250);
+        return;
+      }
+      state.running = false; state.endAt = null; state.leftSec = 0;
+      return;
+    }
+    state.running = false; state.endAt = null;
+    leftSec = (typeof state.leftSec === "number") ? Math.max(0, Math.min(state.leftSec|0, 99*60)) : durTotal;
+  }
+
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden) return;
+    if(ticker) onTick();                                  // мгновенная пересинхронизация после возврата
+    if(breakTicker) onBreakTick();
+  });
 
   // ----- start -----
   buildSideBoundaries();
@@ -789,12 +822,14 @@
   bindTeams();
   bindControls();
   applyNames();
-  renderRound();
-  renderClock();
+  restoreTimers();
+  renderTimer();
   for(var r=1;r<=state.match;r++) revealLayer(r);
   updateTeams();
   updateStatus();
   syncButtons();
+  saveState();
+  try{ localStorage.removeItem("napoleon_v6"); }catch(e){}
 })();
 </script>
 </body>
