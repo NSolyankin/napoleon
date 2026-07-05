@@ -15,7 +15,7 @@
     background:#0d0a06 radial-gradient(120% 92% at 50% 26%, #3a2a1b 0%, #211710 38%, #140f0a 70%, #0d0a06 100%) no-repeat;
     min-height:100vh;
     display:flex; flex-direction:column; align-items:center;
-    padding:30px 18px 26px; -webkit-font-smoothing:antialiased;
+    padding:48px 18px 26px; -webkit-font-smoothing:antialiased;
   }
 
   /* header */
@@ -34,19 +34,19 @@
   .nap-noscript strong{display:block; margin-bottom:8px; color:#ffd9d4; font-size:16px; letter-spacing:.03em}
 
   /* layout */
-  .nap-grid{display:flex; align-items:center; justify-content:center;
-    gap:clamp(14px,3.2vw,48px); margin-top:30px; width:100%; max-width:1040px}
+  .nap-grid{display:flex; align-items:flex-start; justify-content:center;
+    gap:clamp(12px,2.2vw,34px); margin-top:30px; width:100%; max-width:1400px}
   .nap-cakecol{display:flex; flex-direction:column; align-items:center}
 
   /* team cards */
-  .nap-team{width:clamp(150px,18vw,208px);
+  .nap-team{width:clamp(150px,17vw,214px);
     background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
     border:1px solid rgba(255,255,255,.08); border-top:3px solid var(--clr,#888);
-    border-radius:16px; padding:16px 16px 18px; text-align:center;
+    border-radius:16px; padding:16px 14px 16px; text-align:center;
     box-shadow:0 18px 42px rgba(0,0,0,.38)}
   .nap-eyebrow{font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted)}
   .nap-name-input{width:100%; margin:6px 0 2px; border:none; background:transparent; text-align:center;
-    color:var(--ink); font-family:Georgia,serif; font-weight:700; font-size:clamp(17px,2.1vw,23px); outline:none}
+    color:var(--ink); font-family:Georgia,serif; font-weight:700; font-size:clamp(15px,1.8vw,20px); outline:none}
   .nap-name-input:focus{background:rgba(255,255,255,.06); border-radius:8px}
   .nap-swatch-row{display:flex; align-items:center; justify-content:center; gap:8px; margin:8px 0 14px}
   .nap-swatch{-webkit-appearance:none; appearance:none; width:30px; height:30px; padding:0;
@@ -59,8 +59,37 @@
     font-size:clamp(40px,6vw,62px); color:var(--clr,#fff)}
   .nap-score-sub{font-size:11px; color:var(--muted); letter-spacing:.16em; text-transform:uppercase; margin-top:5px}
 
+  /* player photos: крупные фото игроков текущего поединка по бокам от торта */
+  .nap-duelphoto{width:clamp(140px,16vw,240px); align-self:center; flex:0 0 auto;
+    opacity:0; transform:translateY(14px); pointer-events:none;
+    transition:opacity .55s ease, transform .55s ease}
+  .nap-duelphoto.shown{opacity:1; transform:none}
+  .nap-duelphoto img{display:block; width:100%; aspect-ratio:3/4; object-fit:cover;
+    border-radius:16px; border:3px solid var(--clr,#888); background:#241a10;
+    box-shadow:0 18px 42px rgba(0,0,0,.45)}
+  .nap-duelphoto-name{margin-top:9px; text-align:center; font-family:Georgia,serif; font-weight:700;
+    font-size:clamp(15px,1.8vw,22px); color:#f0dcae; text-shadow:0 2px 12px rgba(0,0,0,.6);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  /* слоты загрузки 1-7 под карточкой команды */
+  .nap-slots{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:12px}
+  .nap-slot{position:relative; aspect-ratio:1/1; border-radius:9px; cursor:pointer; padding:0;
+    border:1px dashed rgba(255,255,255,.28); background:rgba(255,255,255,.04) center/cover no-repeat}
+  .nap-slot:hover{border-color:rgba(255,255,255,.5)}
+  .nap-slot.filled{border-style:solid; border-color:rgba(255,255,255,.35)}
+  .nap-slot.cur{border-color:var(--gold); box-shadow:0 0 0 2px rgba(217,184,120,.35)}
+  .nap-slot-n{position:absolute; left:4px; bottom:2px; font-size:10px; color:#d9cbae;
+    text-shadow:0 1px 2px rgba(0,0,0,.85); pointer-events:none}
+  .nap-slot-x{display:none; position:absolute; top:-6px; right:-6px; width:17px; height:17px;
+    border-radius:50%; background:#a83a30; color:#fff; font-size:11px; line-height:17px;
+    text-align:center; cursor:pointer}
+  .nap-slot.filled .nap-slot-x{display:block}
+  .nap-slot-e{display:none; position:absolute; bottom:-6px; right:-6px; width:17px; height:17px;
+    border-radius:50%; background:#8a6d3a; color:#fff8ee; font-size:10px; line-height:17px;
+    text-align:center; cursor:pointer}
+  .nap-slot.filled .nap-slot-e{display:block}
+
   /* cake (SVG slice) */
-  .nap-cakebox{position:relative; width:clamp(280px,44vw,468px)}
+  .nap-cakebox{position:relative; width:clamp(280px,42vw,468px)}
   .nap-svg{display:block; width:100%; height:auto; overflow:visible}
   .nap-svg.names-off .nap-lname{display:none}
 
@@ -134,14 +163,28 @@
   .nap-conf{position:absolute; border-radius:2px; opacity:.95; animation:napfall linear forwards}
   @keyframes napfall{to{transform:translateY(112vh) rotate(560deg); opacity:.9}}
 
+  /* полноэкранный режим: кнопки прижаты к низу, середина отцентрована, все без прокрутки */
+  body.fs{padding:20px 14px 16px}
+  body.fs .nap-sub2,body.fs .nap-hint{display:none}
+  body.fs .nap-rule{margin-top:10px}
+  body.fs .nap-grid{margin-top:auto; max-width:none; gap:clamp(10px,1.6vw,30px)}
+  body.fs .nap-team{flex:0 0 auto; width:clamp(140px,10vw,214px)}
+  body.fs .nap-timerwrap{margin-top:12px}
+  body.fs .nap-status{margin-top:12px}
+  body.fs .nap-controls{margin-top:auto; padding-top:14px}
+  body.fs .nap-cakebox{width:min(34vw, 52vh, 540px)}
+  body.fs .nap-duelphoto{width:min(clamp(150px,17vw,312px), 30vh)}
+
   /* focus + responsive */
   .nap-btn:focus-visible,.nap-swatch:focus-visible,.nap-name-input:focus-visible,.nap-check:focus-within,
-  .nap-field input:focus-visible,.nap-lyr:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+  .nap-field input:focus-visible,.nap-slot:focus-visible,.nap-lyr:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
   @media (max-width:720px){
     .nap-grid{flex-wrap:wrap; gap:12px}
     .nap-team{width:47%; order:1; padding:12px 10px 14px}
     .nap-team[data-team="1"]{order:2}
-    .nap-cakecol{width:100%; order:3; margin-top:8px}
+    .nap-duelphoto{order:3; width:44%}
+    .nap-duelphoto[id="napDuelB"]{order:4}
+    .nap-cakecol{width:100%; order:5; margin-top:8px}
     .nap-score{font-size:clamp(34px,11vw,46px)}
     body{padding:22px 12px 24px}
   }
@@ -175,11 +218,14 @@
       </div>
       <div class="nap-score">0</div>
       <div class="nap-score-sub">из 7</div>
+      <div class="nap-slots" aria-label="Фото игроков команды, слоты по номерам поединков"></div>
     </div>
+
+    <div class="nap-duelphoto" id="napDuelA"><img alt=""><div class="nap-duelphoto-name"></div></div>
 
     <div class="nap-cakecol">
       <div class="nap-cakebox">
-        <svg class="nap-svg" id="napSvg" viewBox="0 0 560 580" role="group"
+        <svg class="nap-svg" id="napSvg" viewBox="35 0 560 580" role="group"
              aria-label="Кусок торта Наполеон, семь слоев управленческой ситуации">
           <defs>
             <radialGradient id="napGlow" cx="50%" cy="40%" r="62%">
@@ -208,6 +254,8 @@
       <div class="nap-status" id="napStatus"></div>
     </div>
 
+    <div class="nap-duelphoto" id="napDuelB"><img alt=""><div class="nap-duelphoto-name"></div></div>
+
     <div class="nap-team" data-team="1">
       <div class="nap-eyebrow">команда</div>
       <input class="nap-name-input" type="text" maxlength="22" aria-label="Название команды">
@@ -217,6 +265,7 @@
       </div>
       <div class="nap-score">0</div>
       <div class="nap-score-sub">из 7</div>
+      <div class="nap-slots" aria-label="Фото игроков команды, слоты по номерам поединков"></div>
     </div>
   </main>
 
@@ -232,11 +281,12 @@
     <label class="nap-check"><input type="checkbox" id="napNames" checked><span>Названия слоев</span></label>
     <button class="nap-btn" id="napFs" type="button">На весь экран</button>
     <div class="nap-hint">
-      «Старт» открывает первый корж и запускает отсчет поединка. «Следующий поединок» добавляет очередной слой и заново запускает таймер. «Перерыв 60 сек» замораживает поединок и ведет минутный отсчет. Клик по коржу задает цвет победителя: первая команда, вторая команда, без цвета. Если таймер остановлен, смена длительности выставляет текущему поединку новое полное время. Счет, таймер и перерыв переживают перезагрузку страницы.
+      «Старт» открывает первый корж и запускает отсчет поединка. «Следующий поединок» добавляет очередной слой и заново запускает таймер. «Перерыв 60 сек» замораживает поединок и ведет минутный отсчет. Клик по коржу задает цвет победителя: первая команда, вторая команда, без цвета. Если таймер остановлен, смена длительности выставляет текущему поединку новое полное время. Слоты 1-7 под карточкой команды - фото игроков по номерам поединков: клик по слоту загружает фото и спрашивает имя игрока, значок пера меняет имя, крестик удаляет. Когда поединок запускается и появляется корж, по бокам от торта крупно появляются фото игроков этого поединка. Фото хранятся в браузере этого компьютера, поэтому загружайте их на том устройстве, с которого идет показ. Счет, таймер, перерыв и фото переживают перезагрузку страницы.
     </div>
   </div>
 
   <div class="nap-confetti" id="napConfetti"></div>
+  <input type="file" id="napFile" accept="image/*" hidden>
 
 <script>
 (function(){
@@ -258,10 +308,11 @@
   var DX = 92, DY = -40;                          // depth vector (back is up-right)
   var NB = 7, BH = (FY1 - FY0) / NB, CREAM = 18;  // layers, band height, cream zone
   var OUT = "#46280e", GLAZE_BASE = "#f2dfb0";    // единый мультяшный контур; светлая основа глазури
+  var PH_MAX = 480, PH_Q = 0.82;                  // фото: наибольшая сторона и качество JPEG
 
   var DEFAULTS = {
     teams: [{name:"Группа 161", color:"#d34b42"}, {name:"Группа 162", color:"#3a78c4"}],
-    paint: {}, showNames: true, match: 0, durMin: 8, durSec: 0,
+    paint: {}, photos: [{},{}], pnames: [{},{}], showNames: true, match: 0, durMin: 8, durSec: 0,
     leftSec: null, running: false, endAt: null,
     brkOn: false, brkEndAt: null, brkEnded: false, done: false
   };
@@ -270,13 +321,14 @@
   var durTotal = clampDur(state.durMin, state.durSec);
   var leftSec = durTotal, running = false, ticker = null, endAt = null;
   var breakLeft = BREAK_SEC, breakTicker = null;
+  var phTarget = null; // куда грузим выбранный файл: {team, slot}
 
   function clampDur(m, s){
     m = Math.max(0, Math.min(90, m|0)); s = Math.max(0, Math.min(59, s|0));
     var t = m*60 + s; return t < 1 ? 1 : t;
   }
 
-  // ----- storage: ключ napoleon_v7; настройки из napoleon_v6 переносятся автоматически -----
+  // ----- storage: ключ napoleon_v9; настройки из napoleon_v8, v7 и v6 переносятся автоматически -----
   function readKey(key){
     try{ var raw = localStorage.getItem(key); if(raw) return JSON.parse(raw); }catch(e){}
     return null;
@@ -296,12 +348,36 @@
     if(p && typeof p === "object"){ for(k = 1; k <= NB; k++){ v = p[k]|0; if(v === 1 || v === 2) out[k] = v; } }
     return out;
   }
+  function normNames(p){
+    var out = [{},{}], t, k, v, src;
+    for(t = 0; t < 2; t++){
+      src = (p && p[t]) || {};
+      for(k = 1; k <= NB; k++){
+        v = src[k];
+        if(typeof v === "string" && v) out[t][k] = v.slice(0, 30);
+      }
+    }
+    return out;
+  }
+  function normPhotos(p){
+    var out = [{},{}], t, k, v, src;
+    for(t = 0; t < 2; t++){
+      src = (p && p[t]) || {};
+      for(k = 1; k <= NB; k++){
+        v = src[k];
+        if(typeof v === "string" && v.indexOf("data:image/") === 0) out[t][k] = v;
+      }
+    }
+    return out;
+  }
   function loadState(){
-    var o = readKey("napoleon_v7") || readKey("napoleon_v6");
+    var o = readKey("napoleon_v9") || readKey("napoleon_v8") || readKey("napoleon_v7") || readKey("napoleon_v6");
     var s = JSON.parse(JSON.stringify(DEFAULTS));
     if(o && typeof o === "object"){
       s.teams = normTeams(o.teams);
       s.paint = normPaint(o.paint);
+      s.photos = normPhotos(o.photos);
+      s.pnames = normNames(o.pnames);
       if(typeof o.showNames === "boolean") s.showNames = o.showNames;
       s.match = Math.max(0, Math.min(NB, o.match|0));
       if(typeof o.durMin === "number") s.durMin = Math.max(0, Math.min(90, o.durMin|0));
@@ -314,7 +390,7 @@
     }
     return s;
   }
-  function saveState(){ try{ localStorage.setItem("napoleon_v7", JSON.stringify(state)); }catch(e){} }
+  function saveState(){ try{ localStorage.setItem("napoleon_v9", JSON.stringify(state)); }catch(e){} }
 
   // ----- color helpers -----
   function hexToRgb(h){
@@ -497,6 +573,132 @@
     }
   }
 
+  // ----- player photos: 7 слотов на команду, показ фото игроков текущего поединка -----
+  function buildSlots(){
+    var cards = document.querySelectorAll(".nap-team");
+    for(var n = 0; n < cards.length; n++){
+      (function(card){
+        var team = +card.dataset.team, host = card.querySelector(".nap-slots");
+        for(var s = 1; s <= NB; s++){
+          (function(slot){
+            var d = document.createElement("button");
+            d.type = "button"; d.className = "nap-slot"; d.dataset.slot = slot;
+            d.setAttribute("aria-label", "Фото игрока поединка "+slot+", загрузить или заменить");
+            d.addEventListener("click", function(){
+              phTarget = {team: team, slot: slot};
+              document.getElementById("napFile").click();
+            });
+            var num = document.createElement("span");
+            num.className = "nap-slot-n"; num.textContent = slot;
+            d.appendChild(num);
+            var x = document.createElement("span");
+            x.className = "nap-slot-x"; x.textContent = "\u00d7";
+            x.setAttribute("role", "button"); x.setAttribute("aria-label", "Удалить фото "+slot);
+            x.addEventListener("click", function(ev){ ev.stopPropagation(); delPhoto(team, slot); });
+            d.appendChild(x);
+            var e2 = document.createElement("span");
+            e2.className = "nap-slot-e"; e2.textContent = "\u270e";
+            e2.setAttribute("role", "button"); e2.setAttribute("aria-label", "Имя игрока для поединка "+slot);
+            e2.addEventListener("click", function(ev){ ev.stopPropagation(); editName(team, slot); });
+            d.appendChild(e2);
+            host.appendChild(d);
+          })(s);
+        }
+      })(cards[n]);
+    }
+  }
+  function bindPhotoInput(){
+    var file = document.getElementById("napFile");
+    file.addEventListener("change", function(){
+      var f = file.files && file.files[0], tgt = phTarget;
+      phTarget = null; file.value = "";
+      if(!f || !tgt) return;
+      var rd = new FileReader();
+      rd.onload = function(){
+        var img = new Image();
+        img.onload = function(){
+          var data = rd.result;
+          var k = Math.min(1, PH_MAX / Math.max(img.width || 1, img.height || 1));
+          var cv = document.createElement("canvas");
+          cv.width = Math.max(1, Math.round((img.width || 1)*k));
+          cv.height = Math.max(1, Math.round((img.height || 1)*k));
+          var ctx = cv.getContext && cv.getContext("2d");
+          if(ctx){
+            try{ ctx.drawImage(img, 0, 0, cv.width, cv.height); data = cv.toDataURL("image/jpeg", PH_Q); }catch(e){}
+          }
+          setPhoto(tgt.team, tgt.slot, data, askName(tgt.team, tgt.slot));
+        };
+        img.onerror = function(){ photoNote("Не удалось прочитать изображение"); };
+        img.src = rd.result;
+      };
+      rd.onerror = function(){ photoNote("Не удалось прочитать файл"); };
+      rd.readAsDataURL(f);
+    });
+  }
+  function askName(team, slot){ // ввод имени игрока; отмена оставляет прежнее имя
+    var cur = state.pnames[team][slot] || "";
+    var nm = cur;
+    try{ nm = window.prompt("Имя игрока для поединка "+slot+" (можно оставить пустым)", cur); }catch(e){}
+    if(nm === null || nm === undefined) nm = cur;
+    return String(nm).trim().slice(0, 30);
+  }
+  function setPhoto(team, slot, data, name){
+    var hadP = Object.prototype.hasOwnProperty.call(state.photos[team], slot), prevP = state.photos[team][slot];
+    var hadN = Object.prototype.hasOwnProperty.call(state.pnames[team], slot), prevN = state.pnames[team][slot];
+    state.photos[team][slot] = data;
+    if(name) state.pnames[team][slot] = name; else delete state.pnames[team][slot];
+    try{
+      localStorage.setItem("napoleon_v9", JSON.stringify(state)); // явная запись: ловим переполнение
+    }catch(e){
+      if(hadP) state.photos[team][slot] = prevP; else delete state.photos[team][slot];
+      if(hadN) state.pnames[team][slot] = prevN; else delete state.pnames[team][slot];
+      photoNote("Не хватило места в хранилище браузера, фото не сохранено");
+      updatePhotos(); return;
+    }
+    updatePhotos();
+  }
+  function editName(team, slot){
+    var nm = askName(team, slot);
+    if(nm) state.pnames[team][slot] = nm; else delete state.pnames[team][slot];
+    saveState(); updatePhotos();
+  }
+  function delPhoto(team, slot){
+    delete state.photos[team][slot];
+    delete state.pnames[team][slot];
+    saveState(); updatePhotos();
+  }
+  function photoNote(msg){
+    var el = document.getElementById("napStatus");
+    el.classList.remove("ready");
+    el.innerHTML = esc(msg);
+    setTimeout(updateStatus, 4000);
+  }
+  function updatePhotos(){
+    var boxes = [document.getElementById("napDuelA"), document.getElementById("napDuelB")];
+    for(var t = 0; t < 2; t++){
+      var box = boxes[t], img = box.querySelector("img");
+      var ph = state.match >= 1 ? state.photos[t][state.match] : null;
+      var nm = state.match >= 1 ? (state.pnames[t][state.match] || "") : "";
+      box.style.setProperty("--clr", state.teams[t].color);
+      box.querySelector(".nap-duelphoto-name").textContent = ph ? nm : "";
+      if(ph){
+        img.src = ph;
+        img.alt = (nm || "Игрок") + ", команда " + state.teams[t].name + ", поединок " + state.match;
+        box.classList.add("shown");            // появляется вместе с коржом поединка
+      }else{
+        box.classList.remove("shown");
+        img.removeAttribute("src");
+      }
+      var slots = document.querySelectorAll('.nap-team[data-team="'+t+'"] .nap-slot');
+      for(var s = 0; s < slots.length; s++){
+        var el = slots[s], k = +el.dataset.slot, p2 = state.photos[t][k];
+        el.classList.toggle("filled", !!p2);
+        el.classList.toggle("cur", state.match === k);
+        el.style.backgroundImage = p2 ? "url("+p2+")" : "";
+      }
+    }
+  }
+
   function setDone(v){
     if(state.done === v) return;
     state.done = v; saveState();
@@ -654,7 +856,7 @@
   function startOrResume(){
     if(state.match === 0){
       state.match = 1; leftSec = durTotal; state.leftSec = leftSec;
-      revealLayer(1);
+      revealLayer(1); updatePhotos();
     }
     if(leftSec > 0) startTick();
     else { renderTimer(); syncButtons(); }                // время вышло: ждем «Следующий поединок»
@@ -668,7 +870,7 @@
     running = false; endAt = null;
     state.match++; leftSec = durTotal;
     state.leftSec = leftSec; state.running = false; state.endAt = null;
-    revealLayer(state.match);
+    revealLayer(state.match); updatePhotos();
     renderTimer(); updateStatus();
     startTick(); saveState();
   }
@@ -700,10 +902,10 @@
         var inp = card.querySelector(".nap-name-input");
         inp.value = state.teams[i].name;
         inp.addEventListener("input", function(){ state.teams[i].name = inp.value; updateStatus(); saveState(); });
-        inp.addEventListener("change", function(){ applyAllLayers(); }); // обновить aria-подписи слоев
+        inp.addEventListener("change", function(){ applyAllLayers(); updatePhotos(); }); // aria слоев и подпись фото
         var sw = card.querySelector(".nap-swatch");
         sw.value = toHex(state.teams[i].color);
-        sw.addEventListener("input", function(){ state.teams[i].color = sw.value; applyAllLayers(); updateTeams(); updateStatus(); saveState(); });
+        sw.addEventListener("input", function(){ state.teams[i].color = sw.value; applyAllLayers(); updateTeams(); updatePhotos(); updateStatus(); saveState(); });
       })(cards[n]);
     }
   }
@@ -764,8 +966,8 @@
       stopTick(); endBreak();
       state.match = 0; leftSec = durTotal;
       state.leftSec = null; state.running = false; state.endAt = null;
-      state.paint = {}; state.done = false;
-      hideAllLayers(); applyAllLayers();
+      state.paint = {}; state.done = false;                // фото игроков сброс не трогает
+      hideAllLayers(); applyAllLayers(); updatePhotos();
       renderTimer(); updateTeams(); updateStatus(); syncButtons(); saveState();
     });
 
@@ -778,7 +980,9 @@
         else if(document.exitFullscreen) document.exitFullscreen();
       });
       document.addEventListener("fullscreenchange", function(){
-        fs.textContent = document.fullscreenElement ? "Выйти из полного экрана" : "На весь экран";
+        var on = !!document.fullscreenElement;
+        document.body.classList.toggle("fs", on);   // компактная вертикаль на полном экране
+        fs.textContent = on ? "Выйти из полного экрана" : "На весь экран";
       });
     }
   }
@@ -820,16 +1024,23 @@
   buildSideBoundaries();
   buildCake();
   bindTeams();
+  buildSlots();
+  bindPhotoInput();
   bindControls();
   applyNames();
   restoreTimers();
   renderTimer();
   for(var r=1;r<=state.match;r++) revealLayer(r);
   updateTeams();
+  updatePhotos();
   updateStatus();
   syncButtons();
   saveState();
-  try{ localStorage.removeItem("napoleon_v6"); }catch(e){}
+  try{
+    localStorage.removeItem("napoleon_v8");
+    localStorage.removeItem("napoleon_v7");
+    localStorage.removeItem("napoleon_v6");
+  }catch(e){}
 })();
 </script>
 </body>
