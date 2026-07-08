@@ -161,6 +161,24 @@
   .nap-hint{width:100%; text-align:center; margin-top:6px; color:#8f8068;
     font-size:12px; letter-spacing:.02em; line-height:1.55}
 
+  /* окно ввода имени и цитаты: свое, не выбивает из полноэкранного режима */
+  .nap-dlg{position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.62); z-index:80; padding:16px}
+  .nap-dlg.open{display:flex}
+  .nap-dlg-panel{width:min(440px,92vw); background:#241a11; border:1px solid rgba(255,255,255,.14);
+    border-radius:16px; padding:20px 20px 18px; box-shadow:0 24px 60px rgba(0,0,0,.55)}
+  .nap-dlg-title{font-family:Georgia,serif; font-weight:700; font-size:18px; color:#f0dcae; margin-bottom:6px}
+  .nap-dlg-lab{display:block; font-size:12px; letter-spacing:.06em; color:var(--muted); margin-top:12px}
+  .nap-dlg-lab input,.nap-dlg-lab textarea{display:block; width:100%; margin-top:5px; font:inherit; font-size:14.5px;
+    color:var(--ink); background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.16); border-radius:10px;
+    padding:8px 10px; outline:none; resize:vertical}
+  .nap-dlg-lab input:focus,.nap-dlg-lab textarea:focus{border-color:var(--gold)}
+  .nap-dlg-count{text-align:right; font-size:11px; color:var(--muted); margin-top:4px}
+  .nap-dlg-btns{display:flex; gap:10px; justify-content:flex-end; margin-top:16px}
+  .nap-bgreset{font:inherit; font-size:11.5px; color:var(--muted); background:none; border:none;
+    cursor:pointer; padding:2px 4px; letter-spacing:.04em}
+  .nap-bgreset:hover{color:var(--ink); text-decoration:underline}
+
   /* confetti */
   .nap-confetti{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:50}
   .nap-conf{position:absolute; border-radius:2px; opacity:.95; animation:napfall linear forwards}
@@ -283,14 +301,38 @@
     </label>
     <label class="nap-check"><input type="checkbox" id="napNames" checked><span>Названия слоев</span></label>
     <label class="nap-check"><input type="checkbox" id="napQuotes" checked><span>Цитаты</span></label>
+    <label class="nap-field">Фон:
+      <input class="nap-swatch" type="color" id="napBg" aria-label="Цвет фона табло">
+      <button class="nap-bgreset" id="napBgReset" type="button">сброс</button>
+    </label>
+    <button class="nap-btn" id="napExport" type="button">Выгрузить состав</button>
+    <button class="nap-btn" id="napImport" type="button">Загрузить состав</button>
     <button class="nap-btn" id="napFs" type="button">На весь экран</button>
     <div class="nap-hint">
-      «Старт» открывает первый корж и запускает отсчет поединка. «Следующий поединок» добавляет очередной слой и заново запускает таймер. «Перерыв 60 сек» замораживает поединок и ведет минутный отсчет. Клик по коржу задает цвет победителя: первая команда, вторая команда, без цвета. Если таймер остановлен, смена длительности выставляет текущему поединку новое полное время. Слоты 1-7 под карточкой команды - фото игроков по номерам поединков: клик по слоту загружает фото и спрашивает имя игрока и вдохновляющую цитату, значок пера меняет имя и цитату, крестик удаляет. Галочка «Цитаты» включает показ цитат под именами. Когда поединок запускается и появляется корж, по бокам от торта крупно появляются фото игроков этого поединка. Фото хранятся в браузере этого компьютера, поэтому загружайте их на том устройстве, с которого идет показ. Счет, таймер, перерыв и фото переживают перезагрузку страницы.
+      «Старт» открывает первый корж и запускает отсчет поединка. «Следующий поединок» добавляет очередной слой и заново запускает таймер. «Перерыв 60 сек» замораживает поединок и ведет минутный отсчет. Клик по коржу задает цвет победителя: первая команда, вторая команда, без цвета. Если таймер остановлен, смена длительности выставляет текущему поединку новое полное время. Слоты 1-7 под карточкой команды - фото игроков по номерам поединков: клик по слоту загружает фото и открывает окно для имени игрока и вдохновляющей цитаты, значок пера меняет их без замены фото, крестик удаляет. Галочка «Цитаты» включает показ цитат под именами. Кружок «Фон» меняет цвет фона табло (слишком светлые тона притемняются автоматически), «сброс» возвращает стандартный. «Выгрузить состав» сохраняет фото, имена, цитаты и команды в файл, «Загрузить состав» подхватывает его на другом компьютере. Когда поединок запускается и появляется корж, по бокам от торта крупно появляются фото игроков этого поединка. Фото хранятся в браузере этого компьютера, поэтому загружайте их на том устройстве, с которого идет показ. Счет, таймер, перерыв и фото переживают перезагрузку страницы.
     </div>
   </div>
 
   <div class="nap-confetti" id="napConfetti"></div>
   <input type="file" id="napFile" accept="image/*" hidden>
+  <input type="file" id="napRosterFile" accept=".json,application/json" hidden>
+
+  <div class="nap-dlg" id="napDlg" role="dialog" aria-modal="true" aria-labelledby="napDlgTitle">
+    <div class="nap-dlg-panel">
+      <div class="nap-dlg-title" id="napDlgTitle"></div>
+      <label class="nap-dlg-lab">Имя игрока
+        <input id="napDlgName" type="text" maxlength="30" autocomplete="off">
+      </label>
+      <label class="nap-dlg-lab">Цитата, которая вдохновляет
+        <textarea id="napDlgQuote" maxlength="300" rows="4"></textarea>
+      </label>
+      <div class="nap-dlg-count" id="napDlgCount">0 / 300</div>
+      <div class="nap-dlg-btns">
+        <button class="nap-btn primary" id="napDlgSave" type="button">Сохранить</button>
+        <button class="nap-btn" id="napDlgCancel" type="button">Отмена</button>
+      </div>
+    </div>
+  </div>
 
 <script>
 (function(){
@@ -316,13 +358,14 @@
 
   var DEFAULTS = {
     teams: [{name:"Группа 161", color:"#d34b42"}, {name:"Группа 162", color:"#3a78c4"}],
-    paint: {}, photos: [{},{}], pnames: [{},{}], quotes: [{},{}],
-    showNames: true, showQuotes: true, match: 0, durMin: 8, durSec: 0,
+    paint: {}, showNames: true, showQuotes: true, bg: null, match: 0, durMin: 8, durSec: 0,
     leftSec: null, running: false, endAt: null,
     brkOn: false, brkEndAt: null, brkEnded: false, done: false
   };
   var BREAK_SEC = 60;
+  var legacyStore = null; // старый совмещенный формат хранилища для миграции медиа
   var state = loadState();
+  var media = loadMedia();
   var durTotal = clampDur(state.durMin, state.durSec);
   var leftSec = durTotal, running = false, ticker = null, endAt = null;
   var breakLeft = BREAK_SEC, breakTicker = null;
@@ -333,7 +376,8 @@
     var t = m*60 + s; return t < 1 ? 1 : t;
   }
 
-  // ----- storage: ключ napoleon_v10; настройки из прежних версий переносятся автоматически -----
+  // ----- storage: два ключа v11 - легкое ядро (napoleon_v11) и тяжелые медиа (napoleon_v11_media),
+  // чтобы частые записи счета и таймера не тянули за собой фото; прежние версии переносятся автоматически -----
   function readKey(key){
     try{ var raw = localStorage.getItem(key); if(raw) return JSON.parse(raw); }catch(e){}
     return null;
@@ -370,22 +414,24 @@
       src = (p && p[t]) || {};
       for(k = 1; k <= NB; k++){
         v = src[k];
-        if(typeof v === "string" && v.indexOf("data:image/") === 0) out[t][k] = v;
+        if(typeof v === "string" && /^data:image\/(jpeg|jpg|png|webp);base64,[a-z0-9+\/=]+$/i.test(v)) out[t][k] = v;
       }
     }
     return out;
   }
   function loadState(){
-    var o = readKey("napoleon_v10") || readKey("napoleon_v9") || readKey("napoleon_v8") || readKey("napoleon_v7") || readKey("napoleon_v6");
+    var o = readKey("napoleon_v11");
+    if(!o){
+      o = readKey("napoleon_v10") || readKey("napoleon_v9") || readKey("napoleon_v8") || readKey("napoleon_v7") || readKey("napoleon_v6");
+      if(o) legacyStore = o;
+    }
     var s = JSON.parse(JSON.stringify(DEFAULTS));
     if(o && typeof o === "object"){
       s.teams = normTeams(o.teams);
       s.paint = normPaint(o.paint);
-      s.photos = normPhotos(o.photos);
-      s.pnames = normStrMap(o.pnames, 30);
-      s.quotes = normStrMap(o.quotes, 300);
       if(typeof o.showNames === "boolean") s.showNames = o.showNames;
       if(typeof o.showQuotes === "boolean") s.showQuotes = o.showQuotes;
+      if(typeof o.bg === "string" && /^#[0-9a-f]{6}$/i.test(o.bg)) s.bg = o.bg;
       s.match = Math.max(0, Math.min(NB, o.match|0));
       if(typeof o.durMin === "number") s.durMin = Math.max(0, Math.min(90, o.durMin|0));
       if(typeof o.durSec === "number") s.durSec = Math.max(0, Math.min(59, o.durSec|0));
@@ -397,7 +443,18 @@
     }
     return s;
   }
-  function saveState(){ try{ localStorage.setItem("napoleon_v10", JSON.stringify(state)); }catch(e){} }
+  function loadMedia(){
+    var m = readKey("napoleon_v11_media") || legacyStore;
+    var out = {photos:[{},{}], pnames:[{},{}], quotes:[{},{}]};
+    if(m && typeof m === "object"){
+      out.photos = normPhotos(m.photos);
+      out.pnames = normStrMap(m.pnames, 30);
+      out.quotes = normStrMap(m.quotes, 300);
+    }
+    return out;
+  }
+  function saveState(){ try{ localStorage.setItem("napoleon_v11", JSON.stringify(state)); }catch(e){} }
+  function saveMedia(){ try{ localStorage.setItem("napoleon_v11_media", JSON.stringify(media)); }catch(e){} }
 
   // ----- color helpers -----
   function hexToRgb(h){
@@ -419,6 +476,32 @@
   function lumRgb(c){ return 0.2126*c[0] + 0.7152*c[1] + 0.0722*c[2]; }
   function lum(h){ return lumRgb(hexToRgb(h)); }
   function textOn(h){ return lum(h) > 150 ? "#3a2a12" : "#fff8ee"; }
+  function rgbToHexStr(c){
+    var s = "#", i, h;
+    for(i = 0; i < 3; i++){ h = Math.max(0, Math.min(255, c[i])).toString(16); s += h.length < 2 ? "0"+h : h; }
+    return s;
+  }
+  function darkCap(hex){ // слишком светлый фон притемняем до читаемого уровня, сохраняя оттенок
+    var c = hexToRgb(toHex(hex)), l = lumRgb(c), f, i;
+    if(l > 60){ f = 60 / l; for(i = 0; i < 3; i++) c[i] = Math.round(c[i]*f); }
+    return rgbToHexStr(c);
+  }
+  function applyBg(){
+    var meta = document.querySelector('meta[name="theme-color"]');
+    var inp = document.getElementById("napBg");
+    if(!state.bg){
+      document.body.style.background = "";
+      if(meta) meta.setAttribute("content", "#15100b");
+      inp.value = "#211710";
+      return;
+    }
+    var c = state.bg;
+    var hi = shade(c, 0.35), lo = shade(c, -0.40), edge = shade(c, -0.62);
+    document.body.style.background = edge + " radial-gradient(120% 92% at 50% 26%, "
+      + hi + " 0%, " + c + " 38%, " + lo + " 70%, " + edge + " 100%) no-repeat";
+    if(meta) meta.setAttribute("content", edge);
+    inp.value = c;
+  }
   function toHex(c){
     if(/^#[0-9a-f]{6}$/i.test(c)) return c;
     if(/^#[0-9a-f]{3}$/i.test(c)) return "#"+c.slice(1).split("").map(function(x){return x+x;}).join("");
@@ -606,7 +689,7 @@
             var e2 = document.createElement("span");
             e2.className = "nap-slot-e"; e2.textContent = "\u270e";
             e2.setAttribute("role", "button"); e2.setAttribute("aria-label", "Имя и цитата игрока для поединка "+slot);
-            e2.addEventListener("click", function(ev){ ev.stopPropagation(); editName(team, slot); });
+            e2.addEventListener("click", function(ev){ ev.stopPropagation(); openEditor(team, slot, null); });
             d.appendChild(e2);
             host.appendChild(d);
           })(s);
@@ -633,7 +716,7 @@
           if(ctx){
             try{ ctx.drawImage(img, 0, 0, cv.width, cv.height); data = cv.toDataURL("image/jpeg", PH_Q); }catch(e){}
           }
-          setPhoto(tgt.team, tgt.slot, data, askName(tgt.team, tgt.slot), askQuote(tgt.team, tgt.slot));
+          openEditor(tgt.team, tgt.slot, data); // имя и цитата вводятся в своем окне
         };
         img.onerror = function(){ photoNote("Не удалось прочитать изображение"); };
         img.src = rd.result;
@@ -642,50 +725,102 @@
       rd.readAsDataURL(f);
     });
   }
-  function askName(team, slot){ // ввод имени игрока; отмена оставляет прежнее имя
-    var cur = state.pnames[team][slot] || "";
-    var nm = cur;
-    try{ nm = window.prompt("Имя игрока для поединка "+slot+" (можно оставить пустым)", cur); }catch(e){}
-    if(nm === null || nm === undefined) nm = cur;
-    return String(nm).trim().slice(0, 30);
+  // ----- окно ввода имени и цитаты (свое, не закрывает полноэкранный режим) -----
+  var dlgCtx = {team: 0, slot: 1, photo: null};
+  function openEditor(team, slot, photoData){
+    dlgCtx.team = team; dlgCtx.slot = slot; dlgCtx.photo = photoData || null;
+    document.getElementById("napDlgTitle").textContent = "Игрок поединка " + slot + " · " + state.teams[team].name;
+    document.getElementById("napDlgName").value = media.pnames[team][slot] || "";
+    document.getElementById("napDlgQuote").value = media.quotes[team][slot] || "";
+    updDlgCount();
+    document.getElementById("napDlg").classList.add("open");
+    document.getElementById("napDlgName").focus();
   }
-  function askQuote(team, slot){ // цитата, которая вдохновляет игрока; отмена оставляет прежнюю
-    var cur = state.quotes[team][slot] || "";
-    var q = cur;
-    try{ q = window.prompt("Цитата, которая вдохновляет игрока (можно оставить пустым)", cur); }catch(e){}
-    if(q === null || q === undefined) q = cur;
-    return String(q).trim().slice(0, 300);
+  function closeEditor(apply){
+    var box = document.getElementById("napDlg");
+    if(!box.classList.contains("open")) return;
+    box.classList.remove("open");
+    var team = dlgCtx.team, slot = dlgCtx.slot, photo = dlgCtx.photo;
+    dlgCtx.photo = null;
+    var nm = media.pnames[team][slot] || "", qt = media.quotes[team][slot] || "";
+    if(apply){
+      nm = String(document.getElementById("napDlgName").value).trim().slice(0, 30);
+      qt = String(document.getElementById("napDlgQuote").value).trim().slice(0, 300);
+    }
+    if(photo){ setPhoto(team, slot, photo, nm, qt); return; } // отмена при новом фото: фото сохраняем, тексты прежние
+    if(!apply) return;
+    if(nm) media.pnames[team][slot] = nm; else delete media.pnames[team][slot];
+    if(qt) media.quotes[team][slot] = qt; else delete media.quotes[team][slot];
+    saveMedia(); updatePhotos();
+  }
+  function updDlgCount(){
+    var q = document.getElementById("napDlgQuote").value;
+    document.getElementById("napDlgCount").textContent = q.length + " / 300";
+  }
+  function bindEditor(){
+    document.getElementById("napDlgSave").addEventListener("click", function(){ closeEditor(true); });
+    document.getElementById("napDlgCancel").addEventListener("click", function(){ closeEditor(false); });
+    document.getElementById("napDlgQuote").addEventListener("input", updDlgCount);
+    document.getElementById("napDlg").addEventListener("click", function(e){ if(e.target === this) closeEditor(false); });
+    document.addEventListener("keydown", function(e){ if(e.key === "Escape") closeEditor(false); });
   }
   function setPhoto(team, slot, data, name, quote){
-    var hadP = Object.prototype.hasOwnProperty.call(state.photos[team], slot), prevP = state.photos[team][slot];
-    var hadN = Object.prototype.hasOwnProperty.call(state.pnames[team], slot), prevN = state.pnames[team][slot];
-    var hadQ = Object.prototype.hasOwnProperty.call(state.quotes[team], slot), prevQ = state.quotes[team][slot];
-    state.photos[team][slot] = data;
-    if(name) state.pnames[team][slot] = name; else delete state.pnames[team][slot];
-    if(quote) state.quotes[team][slot] = quote; else delete state.quotes[team][slot];
+    var hadP = Object.prototype.hasOwnProperty.call(media.photos[team], slot), prevP = media.photos[team][slot];
+    var hadN = Object.prototype.hasOwnProperty.call(media.pnames[team], slot), prevN = media.pnames[team][slot];
+    var hadQ = Object.prototype.hasOwnProperty.call(media.quotes[team], slot), prevQ = media.quotes[team][slot];
+    media.photos[team][slot] = data;
+    if(name) media.pnames[team][slot] = name; else delete media.pnames[team][slot];
+    if(quote) media.quotes[team][slot] = quote; else delete media.quotes[team][slot];
     try{
-      localStorage.setItem("napoleon_v10", JSON.stringify(state)); // явная запись: ловим переполнение
+      localStorage.setItem("napoleon_v11_media", JSON.stringify(media)); // явная запись: ловим переполнение
     }catch(e){
-      if(hadP) state.photos[team][slot] = prevP; else delete state.photos[team][slot];
-      if(hadN) state.pnames[team][slot] = prevN; else delete state.pnames[team][slot];
-      if(hadQ) state.quotes[team][slot] = prevQ; else delete state.quotes[team][slot];
+      if(hadP) media.photos[team][slot] = prevP; else delete media.photos[team][slot];
+      if(hadN) media.pnames[team][slot] = prevN; else delete media.pnames[team][slot];
+      if(hadQ) media.quotes[team][slot] = prevQ; else delete media.quotes[team][slot];
       photoNote("Не хватило места в хранилище браузера, фото не сохранено");
       updatePhotos(); return;
     }
     updatePhotos();
   }
-  function editName(team, slot){ // перо: имя и цитата, фото не трогаем
-    var nm = askName(team, slot);
-    if(nm) state.pnames[team][slot] = nm; else delete state.pnames[team][slot];
-    var qt = askQuote(team, slot);
-    if(qt) state.quotes[team][slot] = qt; else delete state.quotes[team][slot];
-    saveState(); updatePhotos();
-  }
   function delPhoto(team, slot){
-    delete state.photos[team][slot];
-    delete state.pnames[team][slot];
-    delete state.quotes[team][slot];
-    saveState(); updatePhotos();
+    delete media.photos[team][slot];
+    delete media.pnames[team][slot];
+    delete media.quotes[team][slot];
+    saveMedia(); updatePhotos();
+  }
+  // ----- перенос состава между компьютерами (фото, имена, цитаты, команды) -----
+  function exportRoster(){
+    var data = {app: "napoleon", kind: "roster", ver: 11,
+      teams: state.teams, photos: media.photos, pnames: media.pnames, quotes: media.quotes};
+    var blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "napoleon-sostav.json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 3000);
+  }
+  function importRoster(file){
+    var rd = new FileReader();
+    rd.onload = function(){
+      var o = null;
+      try{ o = JSON.parse(rd.result); }catch(e){}
+      if(!o || o.kind !== "roster"){ photoNote("Файл состава не распознан"); return; }
+      var prevM = media, prevT = state.teams;
+      media = {photos: normPhotos(o.photos), pnames: normStrMap(o.pnames, 30), quotes: normStrMap(o.quotes, 300)};
+      if(o.teams) state.teams = normTeams(o.teams);
+      try{
+        localStorage.setItem("napoleon_v11_media", JSON.stringify(media));
+      }catch(e){
+        media = prevM; state.teams = prevT;
+        photoNote("Не хватило места в хранилище браузера, состав не загружен");
+        return;
+      }
+      saveState();
+      applyAllLayers(); updateTeams(); updatePhotos(); updateStatus();
+      photoNote("Состав загружен");
+    };
+    rd.onerror = function(){ photoNote("Не удалось прочитать файл"); };
+    rd.readAsText(file);
   }
   function photoNote(msg){
     var el = document.getElementById("napStatus");
@@ -697,9 +832,9 @@
     var boxes = [document.getElementById("napDuelA"), document.getElementById("napDuelB")];
     for(var t = 0; t < 2; t++){
       var box = boxes[t], img = box.querySelector("img");
-      var ph = state.match >= 1 ? state.photos[t][state.match] : null;
-      var nm = state.match >= 1 ? (state.pnames[t][state.match] || "") : "";
-      var qt = (state.match >= 1 && state.showQuotes) ? (state.quotes[t][state.match] || "") : "";
+      var ph = state.match >= 1 ? media.photos[t][state.match] : null;
+      var nm = state.match >= 1 ? (media.pnames[t][state.match] || "") : "";
+      var qt = (state.match >= 1 && state.showQuotes) ? (media.quotes[t][state.match] || "") : "";
       box.style.setProperty("--clr", state.teams[t].color);
       box.querySelector(".nap-duelphoto-name").textContent = ph ? nm : "";
       box.querySelector(".nap-duelphoto-quote").textContent = ph ? qt : "";
@@ -713,7 +848,7 @@
       }
       var slots = document.querySelectorAll('.nap-team[data-team="'+t+'"] .nap-slot');
       for(var s = 0; s < slots.length; s++){
-        var el = slots[s], k = +el.dataset.slot, p2 = state.photos[t][k];
+        var el = slots[s], k = +el.dataset.slot, p2 = media.photos[t][k];
         el.classList.toggle("filled", !!p2);
         el.classList.toggle("cur", state.match === k);
         el.style.backgroundImage = p2 ? "url("+p2+")" : "";
@@ -976,6 +1111,19 @@
     quotesCb.checked = state.showQuotes;
     quotesCb.addEventListener("change", function(){ state.showQuotes = quotesCb.checked; updatePhotos(); saveState(); });
 
+    var bg = document.getElementById("napBg");
+    bg.addEventListener("input", function(){ state.bg = darkCap(bg.value); applyBg(); saveState(); });
+    document.getElementById("napBgReset").addEventListener("click", function(){ state.bg = null; applyBg(); saveState(); });
+
+    document.getElementById("napExport").addEventListener("click", exportRoster);
+    var rosterInp = document.getElementById("napRosterFile");
+    document.getElementById("napImport").addEventListener("click", function(){ rosterInp.click(); });
+    rosterInp.addEventListener("change", function(){
+      var f = rosterInp.files && rosterInp.files[0];
+      if(f) importRoster(f);
+      rosterInp.value = "";
+    });
+
     var resetBtn = document.getElementById("napReset");
     var resetArmed = false, resetTimer = null;
     function disarmReset(){ resetArmed = false; resetBtn.textContent = "Сбросить"; resetBtn.classList.remove("arm"); }
@@ -1053,7 +1201,9 @@
   buildSlots();
   bindPhotoInput();
   bindControls();
+  bindEditor();
   applyNames();
+  applyBg();
   restoreTimers();
   renderTimer();
   for(var r=1;r<=state.match;r++) revealLayer(r);
@@ -1062,7 +1212,9 @@
   updateStatus();
   syncButtons();
   saveState();
+  saveMedia();
   try{
+    localStorage.removeItem("napoleon_v10");
     localStorage.removeItem("napoleon_v9");
     localStorage.removeItem("napoleon_v8");
     localStorage.removeItem("napoleon_v7");
